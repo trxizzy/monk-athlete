@@ -27,8 +27,17 @@
   }
   header{
     padding:calc(14px + env(safe-area-inset-top)) 20px 10px;
-    display:flex; align-items:baseline; justify-content:space-between;
+    display:flex; align-items:center; justify-content:space-between;
   }
+  .hright{display:flex; align-items:center; gap:12px;}
+  .avatar{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--accent-dim);
+    background:var(--surface2); color:var(--accent); font-size:11px; font-weight:600; letter-spacing:.05em;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden;
+    padding:0; font-family:inherit; flex-shrink:0;
+  }
+  .avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+  .greet{font-size:21px; font-weight:200; letter-spacing:-.01em; margin:8px 4px 16px;}
   .wordmark{font-size:13px; font-weight:600; letter-spacing:.32em; text-transform:uppercase;}
   .wordmark span{color:var(--accent);}
   .hdate{font-size:11px; color:var(--faint); letter-spacing:.08em; text-transform:uppercase;}
@@ -164,6 +173,31 @@
   }
   .log input::placeholder{color:var(--faint);}
   .log input:focus{outline:none; border-color:var(--accent-dim);}
+
+  /* workout editor */
+  .ed-phase{border:1px solid var(--line); border-radius:14px; background:var(--surface); margin-bottom:10px; padding:14px 16px;}
+  .ed-phase .ph-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; flex-wrap:wrap;}
+  .ed-phase .n{font-size:10px; letter-spacing:.2em; font-weight:700; text-transform:uppercase; color:var(--accent);}
+  .ed-meta{display:flex; gap:6px; align-items:center; font-size:11px; color:var(--faint);}
+  .ed-input{
+    background:var(--surface2); border:1px solid var(--line); border-radius:8px;
+    color:var(--text); font-family:inherit; font-size:13px; padding:9px 10px;
+  }
+  .ed-input:focus{outline:none; border-color:var(--accent-dim);}
+  .ed-input::placeholder{color:var(--faint);}
+  .ed-meta .ed-input{width:52px; text-align:center; padding:7px 4px;}
+  .ed-ex{display:flex; flex-direction:column; gap:6px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .ed-ex:last-of-type{border-bottom:0;}
+  .ed-ex .r1{display:flex; gap:8px; align-items:center;}
+  .ed-ex .nm{flex:1; min-width:0;}
+  .ed-ex .rx{width:92px;}
+  .ed-ex .cue-in{width:100%; font-size:12px;}
+  .ed-del{background:none; border:0; color:var(--faint); font-size:15px; cursor:pointer; padding:4px 2px; font-family:inherit;}
+  .ed-add{
+    background:none; border:1px dashed var(--line); border-radius:8px; color:var(--dim);
+    width:100%; padding:10px; font-family:inherit; font-size:12px; cursor:pointer; margin-top:10px;
+  }
+  .ed-note{font-size:11px; color:var(--faint); margin:2px 4px 14px; line-height:1.5;}
   .rounds{display:flex; align-items:center; gap:8px; margin-top:14px;}
   .rounds .lb{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-right:4px;}
   .setdot{
@@ -238,15 +272,27 @@
   .letter b{color:var(--text); font-weight:500;}
   .letter .sig{margin-top:12px; color:var(--accent); font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:600;}
 
-  /* overlays: summary + morning check-in */
-  #summary,#checkin{
+  /* overlays: summary + morning check-in + photo adjust */
+  #summary,#checkin,#avadjust{
     position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:60; display:none;
     align-items:center; justify-content:center; padding:24px;
   }
-  #summary .box,#checkin .box{
+  #summary .box,#checkin .box,#avadjust .box{
     background:var(--surface); border:1px solid var(--line); border-radius:16px;
     padding:28px 22px; max-width:340px; width:100%; text-align:center;
   }
+  .av-frame{
+    width:240px; height:240px; border-radius:50%; overflow:hidden; position:relative;
+    margin:16px auto 14px; border:1px solid var(--accent-dim); background:var(--surface2);
+    touch-action:none; cursor:grab;
+  }
+  .av-frame:active{cursor:grabbing;}
+  .av-frame img{position:absolute; max-width:none; user-select:none; -webkit-user-drag:none; pointer-events:none;}
+  .av-zoomrow{display:flex; align-items:center; gap:12px; margin:0 8px 8px; color:var(--faint); font-size:16px;}
+  .av-zoomrow input{width:100%; accent-color:var(--accent);}
+  .av-actions{display:flex; justify-content:center; gap:18px; margin-top:14px;}
+  .av-actions button{background:none; border:0; color:var(--dim); font-size:12px; cursor:pointer; font-family:inherit;}
+  .av-actions button.danger{color:#c96f6f;}
   .ci-g{margin:0 0 14px; text-align:left;}
   .ci-g .k{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-bottom:8px;}
   .ci-g .chips{gap:6px; flex-wrap:nowrap;}
@@ -282,13 +328,19 @@
 <div class="phone">
   <header>
     <div class="wordmark">Monk <span>Athlete</span></div>
-    <div class="hdate" id="hdate"></div>
+    <div class="hright">
+      <div class="hdate" id="hdate"></div>
+      <button class="avatar" id="avatar" onclick="avatarTap()" aria-label="Set or adjust your profile photo">IZ</button>
+      <input type="file" id="avatar-file" accept="image/*" style="display:none">
+    </div>
   </header>
 
   <main id="main">
 
     <!-- ============ TODAY ============ -->
     <section class="screen on" id="scr-today">
+
+      <div class="greet" id="greet"></div>
 
       <div class="card" onclick="openCheckin()" style="cursor:pointer;" role="button" tabindex="0" aria-label="Morning check-in">
         <div class="status-row">
@@ -315,6 +367,7 @@
         <div class="daypick" id="daypick"></div>
         <div class="arc" id="homearc"></div>
         <button class="btn" onclick="openSession()">Begin Session</button>
+        <button class="btn ghost" onclick="openEditor()" style="margin-top:8px;">Customize Workout</button>
       </div>
 
       <div class="eyebrow">Conditioning · <b>2–3 × per week, 20–30 min</b></div>
@@ -368,6 +421,21 @@
       <div id="phaselist"></div>
       <button class="btn" onclick="finishSession()">Complete Session</button>
       <button class="btn ghost" onclick="showScreen('today')" style="margin-top:8px;">Save &amp; Exit</button>
+    </section>
+
+    <!-- ============ EDITOR ============ -->
+    <section class="screen" id="scr-edit">
+      <div class="session-top">
+        <button class="backbtn" onclick="showScreen('today')" aria-label="Back">‹</button>
+        <div class="tt">
+          <div class="a" id="e-title">Edit Workout</div>
+          <div class="b">Changes save to this device</div>
+        </div>
+      </div>
+      <div class="ed-note">Rename exercises, change reps, rounds, rest, or cues. Add or remove movements per phase. Coach Razz's original program is always one tap away.</div>
+      <div id="editlist"></div>
+      <button class="btn" onclick="saveEdit()">Save Changes</button>
+      <button class="btn ghost" onclick="resetProgram()" style="margin-top:8px;">Reset to Coach Razz's Program</button>
     </section>
 
     <!-- ============ PROGRESS ============ -->
@@ -466,6 +534,21 @@
     <span class="lb">Rest</span><span class="tm" id="resttm">1:15</span>
   </button>
 
+  <div id="avadjust" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="kicker">Profile Photo</div>
+      <div class="av-frame" id="av-frame"><img id="av-img" alt="Your profile photo"></div>
+      <div class="av-zoomrow"><span>−</span><input type="range" id="av-zoom" min="100" max="300" value="100" aria-label="Zoom"><span>+</span></div>
+      <div style="font-size:11px; color:var(--faint); margin-bottom:14px;">Drag to reposition · slide to zoom</div>
+      <button class="btn" onclick="saveAvatarAdjust()">Save</button>
+      <div class="av-actions">
+        <button onclick="document.getElementById('avatar-file').click()">Change photo</button>
+        <button class="danger" onclick="removeAvatar()">Remove</button>
+        <button onclick="closeAvatarAdjust()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div id="checkin" role="dialog" aria-modal="true">
     <div class="box">
       <div class="kicker">Morning Check-In</div>
@@ -506,8 +589,8 @@
 </div>
 
 <script>
-  /* ================= PROGRAM DATA — from Coach ================= */
-  var WORKOUTS = [
+  /* ================= PROGRAM DATA — from Coach Razz ================= */
+  var DEFAULT_WORKOUTS = [
     {
       name:"Day 1 · Foundation", short:"Day 1", tags:"Squat · Push · Pull",
       phases:[
@@ -660,6 +743,7 @@
   function saveState(){
     try{ localStorage.setItem('mam_state_v1', JSON.stringify(state)); }catch(e){}
   }
+  var WORKOUTS = state.program || JSON.parse(JSON.stringify(DEFAULT_WORKOUTS));
   function todayKey(){ return new Date().toISOString().slice(0,10); }
   function weekKey(){
     var d=new Date(); var mon=new Date(d);
@@ -757,6 +841,179 @@
   renderRecovery();
   renderWeek();
 
+  /* ---------- profile ---------- */
+  function renderGreet(){
+    var h=new Date().getHours();
+    var g=h<12?'Good morning':(h<17?'Good afternoon':'Good evening');
+    document.getElementById('greet').textContent=g+', Izzy.';
+  }
+  function renderAvatar(){
+    var a=document.getElementById('avatar');
+    if(state.avatar){
+      a.innerHTML='<img src="'+state.avatar+'" alt="Izzy">';
+    }else{
+      a.textContent='IZ';
+    }
+  }
+  /* photo adjust: drag to reposition, slider to zoom */
+  var AVF=240;                      /* adjust-frame size in px */
+  var avImg=null, avPos={ox:0, oy:0, z:1}, avDrag=null;
+  function avatarTap(){
+    if(state.avatarSrc || state.avatar) openAvatarAdjust();
+    else document.getElementById('avatar-file').click();
+  }
+  document.getElementById('avatar-file').addEventListener('change', function(){
+    var f=this.files && this.files[0];
+    this.value='';
+    if(!f) return;
+    var url=URL.createObjectURL(f);
+    var img=new Image();
+    img.onload=function(){
+      var m=Math.max(img.width,img.height), sc=Math.min(1, 640/m);
+      var c=document.createElement('canvas');
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      state.avatarSrc=c.toDataURL('image/jpeg',0.85);
+      state.avatarPos={ox:0, oy:0, z:1};
+      saveState();
+      URL.revokeObjectURL(url);
+      openAvatarAdjust();
+    };
+    img.src=url;
+  });
+  function openAvatarAdjust(){
+    var src=state.avatarSrc || state.avatar;
+    if(!src){ document.getElementById('avatar-file').click(); return; }
+    avPos = state.avatarPos ? JSON.parse(JSON.stringify(state.avatarPos)) : {ox:0, oy:0, z:1};
+    avImg=new Image();
+    avImg.onload=function(){
+      document.getElementById('av-img').src=src;
+      document.getElementById('av-zoom').value=Math.round(avPos.z*100);
+      drawAvFrame();
+      document.getElementById('avadjust').style.display='flex';
+    };
+    avImg.src=src;
+  }
+  function drawAvFrame(){
+    var img=document.getElementById('av-img');
+    var s0=AVF/Math.min(avImg.width, avImg.height);
+    var dw=avImg.width*s0*avPos.z, dh=avImg.height*s0*avPos.z;
+    var mx=(dw-AVF)/2, my=(dh-AVF)/2;
+    avPos.ox=Math.max(-mx, Math.min(mx, avPos.ox));
+    avPos.oy=Math.max(-my, Math.min(my, avPos.oy));
+    img.style.width=dw+'px';
+    img.style.height=dh+'px';
+    img.style.left=(AVF/2 - dw/2 + avPos.ox)+'px';
+    img.style.top=(AVF/2 - dh/2 + avPos.oy)+'px';
+  }
+  var avFrame=document.getElementById('av-frame');
+  avFrame.addEventListener('pointerdown', function(e){
+    avDrag={x:e.clientX, y:e.clientY};
+    avFrame.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  avFrame.addEventListener('pointermove', function(e){
+    if(!avDrag) return;
+    avPos.ox += e.clientX-avDrag.x;
+    avPos.oy += e.clientY-avDrag.y;
+    avDrag={x:e.clientX, y:e.clientY};
+    drawAvFrame();
+  });
+  avFrame.addEventListener('pointerup', function(){ avDrag=null; });
+  avFrame.addEventListener('pointercancel', function(){ avDrag=null; });
+  document.getElementById('av-zoom').addEventListener('input', function(){
+    avPos.z=this.value/100;
+    drawAvFrame();
+  });
+  function saveAvatarAdjust(){
+    var sc=AVF/Math.min(avImg.width, avImg.height)*avPos.z;
+    var dw=avImg.width*sc, dh=avImg.height*sc;
+    var imgLeft=AVF/2 - dw/2 + avPos.ox, imgTop=AVF/2 - dh/2 + avPos.oy;
+    var sx=-imgLeft/sc, sy=-imgTop/sc, sw=AVF/sc;
+    var c=document.createElement('canvas');
+    c.width=c.height=160;
+    c.getContext('2d').drawImage(avImg, sx, sy, sw, sw, 0, 0, 160, 160);
+    state.avatar=c.toDataURL('image/jpeg',0.85);
+    if(!state.avatarSrc) state.avatarSrc=document.getElementById('av-img').src;
+    state.avatarPos=avPos;
+    saveState(); renderAvatar(); closeAvatarAdjust();
+  }
+  function removeAvatar(){
+    delete state.avatar; delete state.avatarSrc; delete state.avatarPos;
+    saveState(); renderAvatar(); closeAvatarAdjust();
+  }
+  function closeAvatarAdjust(){ document.getElementById('avadjust').style.display='none'; }
+  renderGreet();
+  renderAvatar();
+
+  /* ---------- workout editor ---------- */
+  var editDraft=null;
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+  function openEditor(){
+    editDraft=JSON.parse(JSON.stringify(WORKOUTS[day]));
+    document.getElementById('e-title').textContent='Edit · '+editDraft.name;
+    renderEditor();
+    showScreen('edit');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  }
+  function renderEditor(){
+    var html='';
+    editDraft.phases.forEach(function(p,pi){
+      html+='<div class="ed-phase"><div class="ph-row"><span class="n">'+esc(p.n)+'</span>'
+        +'<span class="ed-meta">Rounds <input class="ed-input" type="number" min="1" value="'+p.rounds+'" data-p="'+pi+'" data-f="rounds" aria-label="Rounds for '+esc(p.n)+'">'
+        +' Rest <input class="ed-input" type="number" min="0" value="'+p.rest+'" data-p="'+pi+'" data-f="rest" aria-label="Rest seconds for '+esc(p.n)+'"> s</span></div>';
+      p.ex.forEach(function(e,xi){
+        html+='<div class="ed-ex"><div class="r1">'
+          +'<input class="ed-input nm" value="'+esc(e.nm)+'" data-p="'+pi+'" data-x="'+xi+'" data-f="nm" aria-label="Exercise name">'
+          +'<input class="ed-input rx" value="'+esc(e.rx)+'" data-p="'+pi+'" data-x="'+xi+'" data-f="rx" aria-label="Reps or duration">'
+          +'<button class="ed-del" data-p="'+pi+'" data-x="'+xi+'" data-a="del" aria-label="Remove '+esc(e.nm)+'">✕</button></div>'
+          +'<input class="ed-input cue-in" placeholder="Coach Razz says… (optional cue)" value="'+esc(e.cue||'')+'" data-p="'+pi+'" data-x="'+xi+'" data-f="cue">'
+          +'</div>';
+      });
+      html+='<button class="ed-add" data-p="'+pi+'" data-a="add">+ Add exercise to '+esc(p.n)+'</button></div>';
+    });
+    document.getElementById('editlist').innerHTML=html;
+  }
+  document.getElementById('editlist').addEventListener('change', function(ev){
+    var t=ev.target;
+    if(!t.dataset || !t.dataset.f) return;
+    var p=editDraft.phases[+t.dataset.p];
+    if('x' in t.dataset){
+      var e=p.ex[+t.dataset.x];
+      if(t.dataset.f==='cue'){
+        e.cue=t.value.trim();
+        if(!e.cue) delete e.cue;
+      }else{
+        e[t.dataset.f]=t.value;
+      }
+    }else{
+      var v=parseInt(t.value||'0',10);
+      p[t.dataset.f]=Math.max(t.dataset.f==='rounds'?1:0, isNaN(v)?0:v);
+    }
+  });
+  document.getElementById('editlist').addEventListener('click', function(ev){
+    var t=ev.target.closest('[data-a]');
+    if(!t) return;
+    var p=editDraft.phases[+t.dataset.p];
+    if(t.dataset.a==='del'){ p.ex.splice(+t.dataset.x,1); renderEditor(); }
+    if(t.dataset.a==='add'){ p.ex.push({nm:'New exercise', rx:'3 × 10'}); renderEditor(); }
+  });
+  function saveEdit(){
+    WORKOUTS[day]=editDraft;
+    state.program=WORKOUTS;
+    saveState();
+    renderToday();
+    showScreen('today');
+  }
+  function resetProgram(){
+    if(!confirm("Replace your changes with Coach Razz's original program?")) return;
+    delete state.program;
+    saveState();
+    WORKOUTS=JSON.parse(JSON.stringify(DEFAULT_WORKOUTS));
+    renderToday();
+    showScreen('today');
+  }
+
   /* ---------- screens ---------- */
   function showScreen(name){
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
@@ -797,15 +1054,15 @@
         +'<div class="phase-body">';
       var logPhase = (p.n==='Build' || p.n==='Resilience');
       p.ex.forEach(function(e){
-        html+='<div class="ex"><div class="top"><span class="nm">'+e.nm+'</span><span class="rx">'+e.rx+'</span></div>';
-        if(e.cue) html+='<div class="cue"><b>Coach Razz says</b>'+e.cue+'</div>';
+        html+='<div class="ex"><div class="top"><span class="nm">'+esc(e.nm)+'</span><span class="rx">'+esc(e.rx)+'</span></div>';
+        if(e.cue) html+='<div class="cue"><b>Coach Razz says</b>'+esc(e.cue)+'</div>';
         if(logPhase){
           var last=state.logs[e.nm];
           html+='<div class="log"><span class="last">'
-            +(last ? 'Last: '+(last.w||'—')+' lb × '+(last.r||'—') : 'First time — set your baseline')
+            +(last ? 'Last: '+esc(last.w||'—')+' lb × '+esc(last.r||'—') : 'First time — set your baseline')
             +'</span>'
-            +'<input type="number" inputmode="decimal" placeholder="lb" aria-label="Weight for '+e.nm+'" data-ex="'+e.nm+'" data-k="w" value="'+(last&&last.w?last.w:'')+'">'
-            +'<input type="number" inputmode="numeric" placeholder="reps" aria-label="Reps for '+e.nm+'" data-ex="'+e.nm+'" data-k="r" value="'+(last&&last.r?last.r:'')+'">'
+            +'<input type="number" inputmode="decimal" placeholder="lb" aria-label="Weight for '+esc(e.nm)+'" data-ex="'+esc(e.nm)+'" data-k="w" value="'+esc(last&&last.w?last.w:'')+'">'
+            +'<input type="number" inputmode="numeric" placeholder="reps" aria-label="Reps for '+esc(e.nm)+'" data-ex="'+esc(e.nm)+'" data-k="r" value="'+esc(last&&last.r?last.r:'')+'">'
             +'</div>';
         }
         html+='</div>';
