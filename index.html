@@ -1,0 +1,948 @@
+<title>Monk Athlete Method</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{
+    --bg:#050506; --surface:#121214; --surface2:#1a1a1e; --line:#26262b;
+    --text:#f4f4f5; --dim:#9a9aa2; --faint:#5e5e66;
+    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"], :root[data-theme="dark"]{
+    --bg:#050506; --surface:#121214; --surface2:#1a1a1e; --line:#26262b;
+    --text:#f4f4f5; --dim:#9a9aa2; --faint:#5e5e66;
+    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:#000; color:var(--text);
+    font-family:-apple-system,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px; line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .phone{
+    max-width:460px; margin:0 auto; min-height:100dvh; background:var(--bg);
+    display:flex; flex-direction:column; position:relative;
+    box-shadow:0 0 80px rgba(0,0,0,.9);
+  }
+  header{
+    padding:calc(14px + env(safe-area-inset-top)) 20px 10px;
+    display:flex; align-items:baseline; justify-content:space-between;
+  }
+  .wordmark{font-size:13px; font-weight:600; letter-spacing:.32em; text-transform:uppercase;}
+  .wordmark span{color:var(--accent);}
+  .hdate{font-size:11px; color:var(--faint); letter-spacing:.08em; text-transform:uppercase;}
+
+  main{flex:1; overflow-y:auto; padding:0 16px 110px;}
+
+  .eyebrow{
+    font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--faint);
+    margin:26px 4px 10px; font-weight:600;
+  }
+  .eyebrow b{color:var(--dim); font-weight:600;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:18px; margin-bottom:12px;
+  }
+
+  /* recovery / status */
+  .status-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .status-big{font-size:34px; font-weight:200; letter-spacing:-.01em; font-variant-numeric:tabular-nums;}
+  .status-big small{font-size:15px; color:var(--dim); font-weight:400; margin-left:2px;}
+  .status-label{text-align:right;}
+  .status-label .t{font-size:12px; color:var(--text); font-weight:500;}
+  .status-label .s{font-size:11px; color:var(--faint); margin-top:2px;}
+  .seg-bar{display:flex; gap:3px; height:5px;}
+  .seg-bar i{flex:1; background:var(--surface2); border-radius:2px;}
+  .seg-bar i.on{background:var(--good);}
+  .metric-split{display:flex; gap:12px; margin-top:14px;}
+  .metric-split .m{flex:1;}
+  .metric-split .m .v{font-size:17px; font-weight:300; font-variant-numeric:tabular-nums;}
+  .metric-split .m .k{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin-top:2px;}
+
+  /* mission hero */
+  .mission{padding:22px 18px 18px;}
+  .kicker{font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+  .mission h1{margin:6px 0 2px; font-size:26px; font-weight:300; letter-spacing:-.01em;}
+  .mission .sub{font-size:12px; color:var(--dim);}
+  .daypick{display:flex; gap:6px; margin-top:16px;}
+  .daypick button{
+    flex:1; background:var(--surface2); border:1px solid var(--line); border-radius:9px;
+    color:var(--faint); font-family:inherit; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    padding:9px 4px; cursor:pointer; font-weight:600;
+  }
+  .daypick button.on{border-color:var(--accent-dim); color:var(--accent); background:rgba(199,161,93,.07);}
+  .arc{display:flex; gap:4px; margin:16px 0 8px;}
+  .arc .ph{flex:1; text-align:center;}
+  .arc .ph i{display:block; height:4px; border-radius:2px; background:var(--surface2); margin-bottom:7px;}
+  .arc .ph.done i{background:var(--accent);}
+  .arc .ph b{font-size:8px; letter-spacing:.08em; color:var(--faint); font-weight:600; text-transform:uppercase;}
+  .arc .ph.done b{color:var(--dim);}
+  .btn{
+    display:block; width:100%; border:0; border-radius:10px; padding:15px;
+    font-size:13px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+    background:var(--text); color:#0a0a0b; cursor:pointer; margin-top:14px;
+    font-family:inherit;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.ghost{background:transparent; color:var(--dim); border:1px solid var(--line);}
+  .btn:focus-visible,.row:focus-visible,.tab:focus-visible,.chip:focus-visible,
+  .daypick button:focus-visible,.setdot:focus-visible,.phase-head:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  /* rows */
+  .row{
+    display:flex; align-items:center; gap:14px; padding:15px 4px;
+    border-bottom:1px solid var(--line); background:none; border-left:0; border-right:0; border-top:0;
+    width:100%; text-align:left; color:var(--text); font-family:inherit; font-size:15px; cursor:pointer;
+  }
+  .row:last-child{border-bottom:0;}
+  .row .ic{
+    width:36px; height:36px; border-radius:9px; background:var(--surface2);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--dim);
+  }
+  .row .tx{flex:1; min-width:0;}
+  .row .tx .t{font-size:14px; font-weight:500; display:block;}
+  .row .tx .s{font-size:12px; color:var(--faint); margin-top:1px; display:block;}
+  .row .end{font-size:12px; color:var(--faint); font-variant-numeric:tabular-nums;}
+  .row .end.on{color:var(--good);}
+
+  /* chips */
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    border:1px solid var(--line); background:var(--surface); color:var(--dim);
+    border-radius:999px; padding:8px 14px; font-size:12px; font-family:inherit; cursor:pointer;
+  }
+  .chip.on{border-color:var(--accent-dim); color:var(--accent); background:rgba(199,161,93,.07);}
+  .chip.on::before{content:"✓ ";}
+
+  .principle{
+    border-left:2px solid var(--accent); padding:2px 0 2px 14px; margin:4px;
+    font-size:14px; font-weight:300; color:var(--dim); line-height:1.6;
+  }
+  .principle b{color:var(--text); font-weight:500;}
+
+  /* session */
+  .session-top{display:flex; align-items:center; gap:12px; padding:6px 4px 14px;}
+  .backbtn{
+    background:var(--surface); border:1px solid var(--line); color:var(--dim);
+    width:34px; height:34px; border-radius:9px; font-size:16px; cursor:pointer; font-family:inherit; flex-shrink:0;
+  }
+  .session-top .tt{flex:1; min-width:0;}
+  .session-top .tt .a{font-size:14px; font-weight:500;}
+  .session-top .tt .b{font-size:11px; color:var(--faint);}
+  .phase{border:1px solid var(--line); border-radius:14px; margin-bottom:10px; overflow:hidden; background:var(--surface);}
+  .phase-head{
+    width:100%; display:flex; align-items:center; gap:12px; padding:15px 16px;
+    background:none; border:0; color:var(--text); font-family:inherit; cursor:pointer; text-align:left;
+  }
+  .phase-head .n{
+    font-size:10px; letter-spacing:.2em; font-weight:700; text-transform:uppercase; color:var(--accent);
+    width:86px; flex-shrink:0;
+  }
+  .phase-head .d{flex:1; font-size:12px; color:var(--faint);}
+  .phase-head .st{font-size:11px; color:var(--faint); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .phase-head .st.done{color:var(--good);}
+  .phase-body{border-top:1px solid var(--line); padding:4px 16px 16px; display:none;}
+  .phase.open .phase-body{display:block;}
+  .ex{padding:12px 0; border-bottom:1px solid var(--line);}
+  .ex:last-child{border-bottom:0;}
+  .ex .top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .ex .nm{font-size:14px; font-weight:500;}
+  .ex .rx{font-size:12px; color:var(--dim); font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .cue{
+    margin-top:7px; font-size:12px; color:var(--dim); line-height:1.5;
+    padding:9px 11px; background:var(--surface2); border-radius:8px;
+  }
+  .cue b{color:var(--accent); font-weight:600; font-size:10px; letter-spacing:.14em; text-transform:uppercase; display:block; margin-bottom:2px;}
+  .log{display:flex; align-items:center; gap:8px; margin-top:9px;}
+  .log .last{font-size:11px; color:var(--faint); margin-right:auto; font-variant-numeric:tabular-nums;}
+  .log input{
+    width:62px; background:var(--surface2); border:1px solid var(--line); border-radius:8px;
+    color:var(--text); font-family:inherit; font-size:13px; padding:8px 6px; text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  .log input::placeholder{color:var(--faint);}
+  .log input:focus{outline:none; border-color:var(--accent-dim);}
+  .rounds{display:flex; align-items:center; gap:8px; margin-top:14px;}
+  .rounds .lb{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-right:4px;}
+  .setdot{
+    width:44px; height:34px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface2); color:var(--faint); font-size:12px; font-family:inherit;
+    cursor:pointer; font-variant-numeric:tabular-nums;
+  }
+  .setdot.on{background:rgba(111,191,143,.12); border-color:var(--good); color:var(--good);}
+  .restnote{font-size:11px; color:var(--faint); margin-left:auto;}
+
+  #restpill{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom:calc(92px + env(safe-area-inset-bottom));
+    background:var(--surface2); border:1px solid var(--accent-dim); border-radius:999px;
+    padding:10px 20px; display:none; align-items:center; gap:10px; z-index:40;
+    font-variant-numeric:tabular-nums; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.6);
+    color:var(--text); font-family:inherit;
+  }
+  #restpill .lb{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent);}
+  #restpill .tm{font-size:18px; font-weight:300;}
+
+  /* progress */
+  .level-track{display:flex; gap:4px; margin:14px 0 8px;}
+  .level-track i{flex:1; height:4px; border-radius:2px; background:var(--surface2);}
+  .level-track i.on{background:var(--accent);}
+  .level-names{display:flex; justify-content:space-between; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint);}
+  .level-names .cur{color:var(--accent); font-weight:700;}
+  .lift{padding:13px 0; border-bottom:1px solid var(--line);}
+  .lift:last-child{border-bottom:0;}
+  .lift .top{display:flex; justify-content:space-between; align-items:baseline;}
+  .lift .nm{font-size:13px; font-weight:500;}
+  .lift .vl{font-size:15px; font-weight:300; font-variant-numeric:tabular-nums;}
+  .lift .vl small{font-size:11px; color:var(--faint);}
+  .lift .vl .up{color:var(--good); font-size:11px; margin-left:6px;}
+  .spark{display:flex; align-items:flex-end; gap:3px; height:26px; margin-top:8px;}
+  .spark i{flex:1; background:var(--surface2); border-radius:2px 2px 0 0;}
+  .spark i:last-child{background:var(--accent);}
+
+  /* library */
+  .search{
+    width:100%; background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; color:var(--text); font-family:inherit; font-size:14px; margin-bottom:12px;
+  }
+  .search::placeholder{color:var(--faint);}
+  .catchips{display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:4px; scrollbar-width:none;}
+  .catchips::-webkit-scrollbar{display:none;}
+  .catchips .chip{white-space:nowrap; flex-shrink:0;}
+  .thumb{
+    width:44px; height:44px; border-radius:9px; background:var(--surface2); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; color:var(--faint);
+  }
+
+  /* mind */
+  .breathe-wrap{display:flex; flex-direction:column; align-items:center; padding:26px 0 10px;}
+  .bcircle{
+    width:150px; height:150px; border-radius:50%;
+    border:1px solid var(--accent-dim);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; margin-bottom:18px;
+  }
+  .bcircle::before{
+    content:""; position:absolute; inset:0; border-radius:50%;
+    background:radial-gradient(circle, rgba(199,161,93,.16), transparent 70%);
+    transform:scale(.6); transition:transform 4s ease-in-out;
+  }
+  .bcircle.in::before{transform:scale(1.05);}
+  .bcircle .bt{font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); z-index:1;}
+  @media (prefers-reduced-motion: reduce){ .bcircle::before{transition:none;} }
+
+  /* coach letter */
+  .letter{font-size:13px; color:var(--dim); line-height:1.7;}
+  .letter b{color:var(--text); font-weight:500;}
+  .letter .sig{margin-top:12px; color:var(--accent); font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:600;}
+
+  /* overlays: summary + morning check-in */
+  #summary,#checkin{
+    position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:60; display:none;
+    align-items:center; justify-content:center; padding:24px;
+  }
+  #summary .box,#checkin .box{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:28px 22px; max-width:340px; width:100%; text-align:center;
+  }
+  .ci-g{margin:0 0 14px; text-align:left;}
+  .ci-g .k{font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-bottom:8px;}
+  .ci-g .chips{gap:6px; flex-wrap:nowrap;}
+  .ci-g .chip{flex:1; text-align:center; padding:9px 0;}
+  .ci-g .chip.on::before{content:"";}
+  #summary h2{font-weight:300; font-size:22px; margin:0 0 4px;}
+  #summary .q{font-size:12px; color:var(--dim); margin-bottom:18px;}
+  .qual{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:20px;}
+  .qual span{
+    font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent);
+    border:1px solid var(--accent-dim); border-radius:999px; padding:6px 11px;
+  }
+
+  /* tab bar */
+  nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:460px; z-index:50;
+    background:rgba(10,10,12,.92); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border-top:1px solid var(--line);
+    display:flex; padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .tab{
+    flex:1; background:none; border:0; color:var(--faint); font-family:inherit; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 0;
+  }
+  .tab b{font-size:9px; letter-spacing:.12em; text-transform:uppercase; font-weight:600;}
+  .tab svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;}
+  .tab.on{color:var(--text);}
+  .screen{display:none;}
+  .screen.on{display:block;}
+</style>
+
+<div class="phone">
+  <header>
+    <div class="wordmark">Monk <span>Athlete</span></div>
+    <div class="hdate" id="hdate"></div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============ TODAY ============ -->
+    <section class="screen on" id="scr-today">
+
+      <div class="card" onclick="openCheckin()" style="cursor:pointer;" role="button" tabindex="0" aria-label="Morning check-in">
+        <div class="status-row">
+          <div class="status-big" id="rec-num">—<small>%</small></div>
+          <div class="status-label">
+            <div class="t" id="rec-t">Morning check-in</div>
+            <div class="s" id="rec-s">Tap to rate sleep, soreness, energy, mood</div>
+          </div>
+        </div>
+        <div class="seg-bar" id="rec-bar" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="metric-split">
+          <div class="m"><div class="v" id="wk-lifts">0 / 3</div><div class="k">Lifts this week</div></div>
+          <div class="m"><div class="v" id="wk-cardio">0 / 3</div><div class="k">Cardio</div></div>
+          <div class="m"><div class="v">Week 1</div><div class="k">Program</div></div>
+        </div>
+      </div>
+
+      <div class="card mission">
+        <div class="kicker" id="m-kicker">Today's Mission</div>
+        <h1 id="m-title"></h1>
+        <div class="sub" id="m-sub"></div>
+        <div class="daypick" id="daypick"></div>
+        <div class="arc" id="homearc"></div>
+        <button class="btn" onclick="openSession()">Begin Session</button>
+      </div>
+
+      <div class="eyebrow">Conditioning · <b>2–3 × per week, 20–30 min</b></div>
+      <div class="card">
+        <div style="font-size:12px; color:var(--faint); margin-bottom:12px;">After lifts or on off days. Keep it simple — just keep the heart rate up. Tap when done.</div>
+        <div class="chips">
+          <button class="chip" onclick="cardioTap(this)">Incline walk</button>
+          <button class="chip" onclick="cardioTap(this)">Row</button>
+          <button class="chip" onclick="cardioTap(this)">Assault bike</button>
+          <button class="chip" onclick="cardioTap(this)">Cycle</button>
+          <button class="chip" onclick="cardioTap(this)">Hike</button>
+        </div>
+      </div>
+
+      <div class="eyebrow">Daily Practice</div>
+      <div class="card" style="padding:6px 16px;">
+        <button class="row" onclick="markDone(this)">
+          <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+          <span class="tx"><span class="t">Monk Maintenance</span><span class="s">10-min daily reset — hips, spine, breath</span></span>
+          <span class="end">Start</span>
+        </button>
+        <button class="row" onclick="showScreen('mind')">
+          <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3c-4 5-4 9 0 12 4-3 4-7 0-12z"/><path d="M5 14c2 5 6 7 7 7s5-2 7-7"/></svg></span>
+          <span class="tx"><span class="t">Breath — Down-regulate</span><span class="s">4 min box breathing</span></span>
+          <span class="end">4 min</span>
+        </button>
+      </div>
+
+      <div class="eyebrow">From Your Coach</div>
+      <div class="card letter">
+        <b>Great work today, Izzy. That was Day 1.</b><br>
+        From here you're training on your own every Wednesday and Friday — all three workouts each week, plus 2–3 cardio sessions.
+        Stay consistent, focus on quality movement over ego, and trust the process. Every workout is another step toward becoming stronger, more athletic, and more resilient. Let's get to work. 💪
+        <div class="sig">— Coach Razz</div>
+      </div>
+
+      <div class="eyebrow">The Idea</div>
+      <div class="principle"><b>Become stronger without becoming broken.</b> No chasing soreness. Every session has a purpose — strength, movement, muscle, conditioning, longevity.</div>
+    </section>
+
+    <!-- ============ SESSION ============ -->
+    <section class="screen" id="scr-session">
+      <div class="session-top">
+        <button class="backbtn" onclick="showScreen('today')" aria-label="Back">‹</button>
+        <div class="tt">
+          <div class="a" id="s-title"></div>
+          <div class="b" id="s-sub"></div>
+        </div>
+        <div class="hdate" id="elapsed">0:00</div>
+      </div>
+      <div id="phaselist"></div>
+      <button class="btn" onclick="finishSession()">Complete Session</button>
+      <button class="btn ghost" onclick="showScreen('today')" style="margin-top:8px;">Save &amp; Exit</button>
+    </section>
+
+    <!-- ============ PROGRESS ============ -->
+    <section class="screen" id="scr-progress">
+      <div class="card">
+        <div class="mission" style="padding:0;">
+          <div class="kicker">Level System</div>
+          <h1 style="font-size:22px;">Foundation</h1>
+          <div class="sub">Week 1 — building the base. Performance level unlocks after consistent Week 6.</div>
+        </div>
+        <div class="level-track"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="level-names"><span class="cur">Foundation</span><span>Performance</span><span>Mastery</span></div>
+      </div>
+
+      <div class="eyebrow">Key Lifts · Working Weight</div>
+      <div class="card" style="padding:6px 18px;">
+        <div class="lift">
+          <div class="top"><span class="nm">Goblet squat</span><span class="vl">— <small>log Day 1 to start</small></span></div>
+          <div class="spark"><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:26%"></i></div>
+        </div>
+        <div class="lift">
+          <div class="top"><span class="nm">Trap bar deadlift</span><span class="vl">— <small>log Day 2 to start</small></span></div>
+          <div class="spark"><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:26%"></i></div>
+        </div>
+        <div class="lift">
+          <div class="top"><span class="nm">Front squat</span><span class="vl">— <small>log Day 3 to start</small></span></div>
+          <div class="spark"><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:26%"></i></div>
+        </div>
+        <div class="lift">
+          <div class="top"><span class="nm">Pull-ups</span><span class="vl">— <small>log Day 2 to start</small></span></div>
+          <div class="spark"><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:26%"></i></div>
+        </div>
+      </div>
+
+      <div class="eyebrow">What You're Building</div>
+      <div class="card" style="padding:6px 16px;">
+        <div class="row" style="cursor:default;"><span class="tx"><span class="t">Strength</span><span class="s">Squat · push · pull · hinge, progressed weekly</span></span></div>
+        <div class="row" style="cursor:default;"><span class="tx"><span class="t">Conditioning</span><span class="s">Ignite circuits + 2–3 cardio sessions</span></span></div>
+        <div class="row" style="cursor:default;"><span class="tx"><span class="t">Durability</span><span class="s">Nordics, tibialis, Copenhagen, single-leg work</span></span></div>
+        <div class="row" style="cursor:default;"><span class="tx"><span class="t">Posture &amp; mobility</span><span class="s">CARs, deep squat, 90/90, hanging decompression</span></span></div>
+        <div class="row" style="cursor:default;"><span class="tx"><span class="t">Balance &amp; coordination</span><span class="s">Single-leg RDL, hip airplanes, cossacks</span></span></div>
+      </div>
+
+      <div class="eyebrow">Weekly Review</div>
+      <div class="card letter">
+        <b>Coach's note — Week 1.</b>
+        Day 1 is in the books. This week is about learning the movements and finding your working weights — leave 2 reps in the tank everywhere. Log your weights so we can progress them next week.
+        <div class="sig">— Coach Razz</div>
+      </div>
+    </section>
+
+    <!-- ============ LIBRARY ============ -->
+    <section class="screen" id="scr-library">
+      <input class="search" id="libsearch" placeholder="Search movements…" aria-label="Search movements">
+      <div class="catchips" id="libcats"></div>
+      <div class="card" style="padding:6px 16px;" id="liblist"></div>
+      <div class="principle" style="margin-top:18px;">Every movement gets a short demo video from Coach Razz, the why behind it, and the exact cues from your sessions. (Video slots are ready — film 15–30 sec clips and we'll drop them in.)</div>
+    </section>
+
+    <!-- ============ MIND ============ -->
+    <section class="screen" id="scr-mind">
+      <div class="card">
+        <div class="breathe-wrap">
+          <div class="bcircle" id="bcircle"><span class="bt" id="btext">Ready</span></div>
+          <div style="font-size:12px; color:var(--faint); margin-bottom:14px;">Box breathing · 4 in · 4 hold · 4 out · 4 hold</div>
+          <button class="btn" style="max-width:220px;" id="bbtn" onclick="toggleBreath()">Begin</button>
+        </div>
+      </div>
+
+      <div class="eyebrow">Practices</div>
+      <div class="card" style="padding:6px 16px;">
+        <button class="row" onclick="markDone(this)">
+          <span class="ic">☾</span>
+          <span class="tx"><span class="t">Pre-sleep down-shift</span><span class="s">10 min · lowers heart rate before bed</span></span>
+          <span class="end">10 min</span>
+        </button>
+        <button class="row" onclick="markDone(this)">
+          <span class="ic">☀</span>
+          <span class="tx"><span class="t">Morning stillness</span><span class="s">5 min · awareness before action</span></span>
+          <span class="end">5 min</span>
+        </button>
+        <button class="row" onclick="markDone(this)">
+          <span class="ic">✎</span>
+          <span class="tx"><span class="t">Journal</span><span class="s">Tonight's prompt: what did training build today?</span></span>
+          <span class="end">Open</span>
+        </button>
+      </div>
+
+      <div class="eyebrow">Why This Matters</div>
+      <div class="principle"><b>Leave better than you arrived.</b> CENTER isn't a cooldown — it's mobility, breathing, and recovery so the nervous system leaves calm instead of fried.</div>
+    </section>
+
+  </main>
+
+  <button id="restpill" onclick="stopRest()">
+    <span class="lb">Rest</span><span class="tm" id="resttm">1:15</span>
+  </button>
+
+  <div id="checkin" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="kicker">Morning Check-In</div>
+      <h2 style="font-weight:300; font-size:20px; margin:6px 0 16px;">How did you wake up?</h2>
+      <div id="ci-groups"></div>
+      <button class="btn" onclick="saveCheckin()">Save Check-In</button>
+      <button class="btn ghost" onclick="closeCheckin()" style="margin-top:8px;">Cancel</button>
+    </div>
+  </div>
+
+  <div id="summary" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="kicker">Session Complete</div>
+      <h2>Left better than you arrived.</h2>
+      <div class="q" id="sum-sub"></div>
+      <div class="qual">
+        <span>Strength</span><span>Movement</span><span>Muscle</span>
+        <span>Conditioning</span><span>Longevity</span>
+      </div>
+      <button class="btn" onclick="closeSummary()">Done</button>
+    </div>
+  </div>
+
+  <nav aria-label="Main">
+    <button class="tab on" data-scr="today" onclick="showScreen('today')">
+      <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><b>Today</b>
+    </button>
+    <button class="tab" data-scr="progress" onclick="showScreen('progress')">
+      <svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg><b>Progress</b>
+    </button>
+    <button class="tab" data-scr="library" onclick="showScreen('library')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M10 9l5 3-5 3z"/></svg><b>Library</b>
+    </button>
+    <button class="tab" data-scr="mind" onclick="showScreen('mind')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg><b>Mind</b>
+    </button>
+  </nav>
+</div>
+
+<script>
+  /* ================= PROGRAM DATA — from Coach ================= */
+  var WORKOUTS = [
+    {
+      name:"Day 1 · Foundation", short:"Day 1", tags:"Squat · Push · Pull",
+      phases:[
+        { n:"Arrive", d:"Prepare joints, muscles, and nervous system.", rounds:1, rest:0,
+          ex:[
+            {nm:"Backward sled drag", rx:"2 min"},
+            {nm:"Tibialis raises", rx:"× 20"},
+            {nm:"World's greatest stretch", rx:"× 4 / side"},
+            {nm:"Scap push-ups", rx:"× 10"}
+          ]},
+        { n:"Build", d:"Main strength work.", rounds:3, rest:75,
+          ex:[
+            {nm:"Heel elevated goblet squat", rx:"× 10–12",
+             cue:"Heels up, chest tall, sit straight down. Pick a weight that leaves 2 reps in the tank."},
+            {nm:"Incline dumbbell press", rx:"× 8–10"},
+            {nm:"Chest supported row", rx:"× 10–12",
+             cue:"Squeeze the shoulder blades — don't yank with the arms."}
+          ]},
+        { n:"Resilience", d:"Durability and injury prevention.", rounds:3, rest:0,
+          ex:[
+            {nm:"Single-leg RDL", rx:"× 8 / leg",
+             cue:"Slow and balanced beats heavy and sloppy."},
+            {nm:"Deficit push-ups", rx:"AMRAP — leave 2 in the tank"},
+            {nm:"Standing tibialis + calf raise", rx:"× 20"}
+          ]},
+        { n:"Ignite", d:"Athletic conditioning.", rounds:3, rest:45,
+          ex:[
+            {nm:"Farmer carry", rx:"40 yd"},
+            {nm:"Assault bike", rx:"30 sec"},
+            {nm:"Med ball slams", rx:"× 10"}
+          ]},
+        { n:"Center", d:"Leave better than you arrived.", rounds:1, rest:0,
+          ex:[
+            {nm:"Deep squat hold", rx:"2 min"},
+            {nm:"Box breathing", rx:"4 · 4 · 4 · 4",
+             cue:"Nervous system leaves calm, not fried."}
+          ]}
+      ]
+    },
+    {
+      name:"Day 2 · Power", short:"Day 2", tags:"Explode · Pull · Hinge",
+      phases:[
+        { n:"Arrive", d:"Prime for explosive work.", rounds:2, rest:0,
+          ex:[
+            {nm:"Lateral med ball slam", rx:"× 5 / side"},
+            {nm:"Broad jump", rx:"× 3", cue:"Stick every landing quietly."},
+            {nm:"Hip airplanes", rx:"× 5 / side"}
+          ]},
+        { n:"Build", d:"Main strength work.", rounds:3, rest:120,
+          ex:[
+            {nm:"Trap bar deadlift", rx:"× 5–6",
+             cue:"Brace before you pull. Bar speed tells the truth — if it grinds, hold the weight."},
+            {nm:"Pull-ups (or assisted)", rx:"× 6–8"}
+          ]},
+        { n:"Resilience", d:"Durability and injury prevention.", rounds:3, rest:0,
+          ex:[
+            {nm:"Split squat", rx:"× 8 / leg"},
+            {nm:"Assisted Nordic curl", rx:"× 5",
+             cue:"Fight the descent as long as you can."},
+            {nm:"Copenhagen plank", rx:"15 sec / side"}
+          ]},
+        { n:"Ignite", d:"Athletic conditioning.", rounds:3, rest:45,
+          ex:[
+            {nm:"Row", rx:"250 m"},
+            {nm:"Walking lunges", rx:"× 12"},
+            {nm:"Battle ropes", rx:"30 sec"}
+          ]},
+        { n:"Center", d:"Leave better than you arrived.", rounds:1, rest:0,
+          ex:[
+            {nm:"90/90 hip stretch", rx:"90 sec / side"},
+            {nm:"Deep breathing", rx:"2 min · long exhale"}
+          ]}
+      ]
+    },
+    {
+      name:"Day 3 · Monk Athlete", short:"Day 3", tags:"Flow · Athleticism · Longevity",
+      phases:[
+        { n:"Arrive", d:"Open the hips, shoulders, and grip.", rounds:1, rest:0,
+          ex:[
+            {nm:"Backward sled drag", rx:"2 min"},
+            {nm:"Cossack squats", rx:"× 6 / side"},
+            {nm:"Shoulder CARs", rx:"× 5", cue:"Slow circles — own the whole range."},
+            {nm:"Dead hang", rx:"30 sec"}
+          ]},
+        { n:"Build", d:"Main strength work.", rounds:3, rest:75,
+          ex:[
+            {nm:"Front squat", rx:"× 6–8",
+             cue:"Elbows up, stay tall. Quality first — the weight comes later."},
+            {nm:"Half-kneeling landmine press", rx:"× 8 / side"},
+            {nm:"Neutral grip lat pulldown", rx:"× 10"}
+          ]},
+        { n:"Resilience", d:"Durability and injury prevention.", rounds:3, rest:0,
+          ex:[
+            {nm:"Walking DB lunges", rx:"× 10 / leg"},
+            {nm:"Face pull to external rotation", rx:"× 15",
+             cue:"This is shoulder insurance. Light weight, perfect reps."},
+            {nm:"Hanging knee raises", rx:"× 10"}
+          ]},
+        { n:"Ignite", d:"Athletic conditioning.", rounds:3, rest:45,
+          ex:[
+            {nm:"Rotational med ball slams", rx:"× 8 / side"},
+            {nm:"Farmer carry", rx:"40 yd"},
+            {nm:"Ski erg or assault bike", rx:"30 sec"}
+          ]},
+        { n:"Center", d:"Leave better than you arrived.", rounds:1, rest:0,
+          ex:[
+            {nm:"Hanging decompression", rx:"3 × 20 sec"},
+            {nm:"Deep squat breathing", rx:"2 min"}
+          ]}
+      ]
+    }
+  ];
+
+  var LIB = [
+    ["Heel elevated goblet squat","Build · Squat","Squat"],
+    ["Front squat","Build · Squat","Squat"],
+    ["Trap bar deadlift","Build · Hinge","Hinge"],
+    ["Single-leg RDL","Resilience · Hinge","Hinge"],
+    ["Incline dumbbell press","Build · Push","Push"],
+    ["Half-kneeling landmine press","Build · Push","Push"],
+    ["Deficit push-ups","Resilience · Push","Push"],
+    ["Chest supported row","Build · Pull","Pull"],
+    ["Pull-ups","Build · Pull","Pull"],
+    ["Neutral grip lat pulldown","Build · Pull","Pull"],
+    ["Face pull to external rotation","Resilience · Shoulders","Resilience"],
+    ["Assisted Nordic curl","Resilience · Hamstrings","Resilience"],
+    ["Copenhagen plank","Resilience · Groin","Resilience"],
+    ["Tibialis raises","Resilience · Shins & ankles","Resilience"],
+    ["Split squat","Resilience · Single leg","Resilience"],
+    ["Farmer carry","Ignite · Carry","Ignite"],
+    ["Med ball slams","Ignite · Power","Ignite"],
+    ["Battle ropes","Ignite · Conditioning","Ignite"],
+    ["Backward sled drag","Arrive · Knees & conditioning","Ignite"],
+    ["World's greatest stretch","Arrive · Full body","Mobility"],
+    ["Hip airplanes","Arrive · Hips","Mobility"],
+    ["Cossack squats","Arrive · Hips & ankles","Mobility"],
+    ["Shoulder CARs","Arrive · Shoulders","Mobility"],
+    ["90/90 hip stretch","Center · Hips","Mobility"],
+    ["Hanging decompression","Center · Spine","Mobility"],
+    ["Box breathing","Center · Breath","Mobility"]
+  ];
+
+  /* ================= state (persists on this device) ================= */
+  var day = 0;
+  var state = {logs:{}, checkins:{}, cardio:{}, sessions:{}};
+  try{
+    var saved = localStorage.getItem('mam_state_v1');
+    if(saved) state = Object.assign(state, JSON.parse(saved));
+  }catch(e){}
+  function saveState(){
+    try{ localStorage.setItem('mam_state_v1', JSON.stringify(state)); }catch(e){}
+  }
+  function todayKey(){ return new Date().toISOString().slice(0,10); }
+  function weekKey(){
+    var d=new Date(); var mon=new Date(d);
+    mon.setDate(d.getDate() - ((d.getDay()+6)%7));
+    return mon.toISOString().slice(0,10);
+  }
+
+  document.getElementById('hdate').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+  /* ---------- recovery / morning check-in ---------- */
+  var ciDims=[['sleep','Sleep quality'],['soreness','Soreness — 5 means fresh'],['energy','Energy'],['mood','Mood']];
+  var ciVals={};
+  function openCheckin(){
+    ciVals={};
+    var wrap=document.getElementById('ci-groups');
+    wrap.innerHTML='';
+    ciDims.forEach(function(dim){
+      var g=document.createElement('div'); g.className='ci-g';
+      var k=document.createElement('div'); k.className='k'; k.textContent=dim[1];
+      var chips=document.createElement('div'); chips.className='chips';
+      for(var v=1; v<=5; v++){
+        (function(v){
+          var b=document.createElement('button'); b.className='chip'; b.textContent=v;
+          b.onclick=function(){
+            ciVals[dim[0]]=v;
+            chips.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+            b.classList.add('on');
+          };
+          chips.appendChild(b);
+        })(v);
+      }
+      g.appendChild(k); g.appendChild(chips); wrap.appendChild(g);
+    });
+    document.getElementById('checkin').style.display='flex';
+  }
+  function closeCheckin(){ document.getElementById('checkin').style.display='none'; }
+  function saveCheckin(){
+    var sum=0;
+    ciDims.forEach(function(dim){ sum += (ciVals[dim[0]]||3); });
+    var score=Math.round(sum/ciDims.length*20);
+    state.checkins[todayKey()]={score:score};
+    saveState(); renderRecovery(); closeCheckin();
+  }
+  function renderRecovery(){
+    var c=state.checkins[todayKey()];
+    var num=document.getElementById('rec-num'), t=document.getElementById('rec-t'), s=document.getElementById('rec-s');
+    var bars=document.querySelectorAll('#rec-bar i');
+    if(!c){
+      num.innerHTML='—<small>%</small>';
+      t.textContent='Morning check-in';
+      s.textContent='Tap to rate sleep, soreness, energy, mood';
+      bars.forEach(function(b){b.classList.remove('on');});
+      return;
+    }
+    num.innerHTML=c.score+'<small>%</small>';
+    t.textContent='Recovery — '+(c.score>=80?'Ready to build':(c.score>=60?'Train, but watch intensity':'Prioritize recovery today'));
+    s.textContent='From this morning’s check-in · Tap to redo';
+    bars.forEach(function(b,i){ b.classList.toggle('on', i < Math.round(c.score/10)); });
+  }
+  function renderWeek(){
+    var lifts=(state.sessions[weekKey()]||[]).length;
+    document.getElementById('wk-lifts').textContent=Math.min(lifts,3)+' / 3';
+    var cd=(state.cardio[weekKey()]||[]);
+    document.getElementById('wk-cardio').textContent=Math.min(cd.length,3)+' / 3';
+    document.querySelectorAll('#scr-today .chips .chip').forEach(function(ch){
+      if(ch.closest('.ci-g')) return;
+      ch.classList.toggle('on', cd.indexOf(ch.textContent.replace(/^✓ /,''))>=0);
+    });
+  }
+
+  /* ---------- today: day picker + arc ---------- */
+  function renderToday(){
+    var w = WORKOUTS[day];
+    document.getElementById('m-title').textContent = w.name;
+    document.getElementById('m-sub').textContent = w.tags + " · 5 phases · ~55 min";
+    var dp = document.getElementById('daypick');
+    dp.innerHTML = "";
+    WORKOUTS.forEach(function(wo,i){
+      var b=document.createElement('button');
+      b.textContent=wo.short;
+      if(i===day) b.classList.add('on');
+      b.onclick=function(){ day=i; renderToday(); };
+      dp.appendChild(b);
+    });
+    var arc=document.getElementById('homearc');
+    arc.innerHTML="";
+    w.phases.forEach(function(p){
+      var d=document.createElement('div'); d.className='ph';
+      d.innerHTML='<i></i><b>'+p.n+'</b>';
+      arc.appendChild(d);
+    });
+  }
+  renderToday();
+  renderRecovery();
+  renderWeek();
+
+  /* ---------- screens ---------- */
+  function showScreen(name){
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+    document.getElementById('scr-'+name).classList.add('on');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.toggle('on', t.dataset.scr===name);});
+    document.getElementById('main').scrollTo(0,0);
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- session ---------- */
+  var elapsedTimer=null, elapsedSec=0;
+  function openSession(){
+    var w=WORKOUTS[day];
+    document.getElementById('s-title').textContent=w.name;
+    document.getElementById('s-sub').textContent=w.tags+" — programmed by Coach Razz";
+    buildPhases(w);
+    elapsedSec=0;
+    clearInterval(elapsedTimer);
+    elapsedTimer=setInterval(function(){
+      elapsedSec++;
+      var m=Math.floor(elapsedSec/60), s=elapsedSec%60;
+      document.getElementById('elapsed').textContent=m+':'+(s<10?'0':'')+s;
+    },1000);
+    showScreen('session');
+    document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  }
+
+  function buildPhases(w){
+    var list=document.getElementById('phaselist');
+    list.innerHTML="";
+    w.phases.forEach(function(p,pi){
+      var ph=document.createElement('div');
+      ph.className='phase'+(pi===0?' open':'');
+      var roundsLabel = p.rounds>1 ? p.rounds+' rounds' : '';
+      var html='<button class="phase-head" onclick="this.parentElement.classList.toggle(\'open\')">'
+        +'<span class="n">'+p.n+'</span><span class="d">'+p.d+'</span>'
+        +'<span class="st">'+(roundsLabel||'&nbsp;')+'</span></button>'
+        +'<div class="phase-body">';
+      var logPhase = (p.n==='Build' || p.n==='Resilience');
+      p.ex.forEach(function(e){
+        html+='<div class="ex"><div class="top"><span class="nm">'+e.nm+'</span><span class="rx">'+e.rx+'</span></div>';
+        if(e.cue) html+='<div class="cue"><b>Coach Razz says</b>'+e.cue+'</div>';
+        if(logPhase){
+          var last=state.logs[e.nm];
+          html+='<div class="log"><span class="last">'
+            +(last ? 'Last: '+(last.w||'—')+' lb × '+(last.r||'—') : 'First time — set your baseline')
+            +'</span>'
+            +'<input type="number" inputmode="decimal" placeholder="lb" aria-label="Weight for '+e.nm+'" data-ex="'+e.nm+'" data-k="w" value="'+(last&&last.w?last.w:'')+'">'
+            +'<input type="number" inputmode="numeric" placeholder="reps" aria-label="Reps for '+e.nm+'" data-ex="'+e.nm+'" data-k="r" value="'+(last&&last.r?last.r:'')+'">'
+            +'</div>';
+        }
+        html+='</div>';
+      });
+      html+='<div class="rounds"><span class="lb">'+(p.rounds>1?'Rounds':'Done')+'</span>';
+      for(var r=1;r<=p.rounds;r++){
+        html+='<button class="setdot" data-rest="'+p.rest+'" onclick="roundTap(this)">'+(p.rounds>1?r:'✓')+'</button>';
+      }
+      if(p.rest>0) html+='<span class="restnote">Rest '+(p.rest>=60?Math.floor(p.rest/60)+' min'+(p.rest%60? ' '+(p.rest%60)+' s':''):p.rest+' sec')+'</span>';
+      html+='</div></div>';
+      ph.innerHTML=html;
+      list.appendChild(ph);
+    });
+  }
+  document.getElementById('phaselist').addEventListener('change', function(ev){
+    var inp=ev.target;
+    if(!inp.dataset || !inp.dataset.ex) return;
+    var ex=inp.dataset.ex;
+    state.logs[ex]=state.logs[ex]||{};
+    state.logs[ex][inp.dataset.k]=inp.value;
+    state.logs[ex].date=todayKey();
+    saveState();
+  });
+
+  function roundTap(dot){
+    dot.classList.toggle('on');
+    var rest=parseInt(dot.dataset.rest||'0',10);
+    if(dot.classList.contains('on') && rest>0) startRest(rest);
+    var body=dot.closest('.phase-body'), phase=body.closest('.phase');
+    var all=body.querySelectorAll('.setdot'), on=body.querySelectorAll('.setdot.on');
+    var st=phase.querySelector('.st');
+    if(on.length===all.length){
+      st.textContent='Done'; st.classList.add('done');
+      phase.classList.remove('open');
+      var next=phase.nextElementSibling;
+      if(next && next.classList.contains('phase')) next.classList.add('open');
+    }
+  }
+
+  /* ---------- rest timer ---------- */
+  var restInt=null;
+  function startRest(sec){
+    clearInterval(restInt);
+    var pill=document.getElementById('restpill'), tm=document.getElementById('resttm');
+    pill.style.display='flex';
+    var left=sec;
+    function draw(){ tm.textContent=Math.floor(left/60)+':'+((left%60)<10?'0':'')+(left%60); }
+    draw();
+    restInt=setInterval(function(){
+      left--;
+      if(left<=0){ stopRest(); return; }
+      draw();
+    },1000);
+  }
+  function stopRest(){
+    clearInterval(restInt); restInt=null;
+    document.getElementById('restpill').style.display='none';
+  }
+
+  function finishSession(){
+    stopRest();
+    clearInterval(elapsedTimer); elapsedTimer=null;
+    var wk=weekKey();
+    state.sessions[wk]=state.sessions[wk]||[];
+    if(state.sessions[wk].indexOf(day)<0) state.sessions[wk].push(day);
+    saveState(); renderWeek();
+    document.getElementById('sum-sub').textContent=WORKOUTS[day].name+' · '+document.getElementById('elapsed').textContent;
+    document.getElementById('summary').style.display='flex';
+    document.querySelectorAll('#homearc .ph').forEach(function(p){p.classList.add('done');});
+  }
+  function closeSummary(){
+    document.getElementById('summary').style.display='none';
+    showScreen('today');
+  }
+
+  /* ---------- cardio + generic done ---------- */
+  function cardioTap(chip){
+    var label=chip.textContent.replace(/^✓ /,'');
+    var wk=weekKey();
+    state.cardio[wk]=state.cardio[wk]||[];
+    var i=state.cardio[wk].indexOf(label);
+    if(i<0) state.cardio[wk].push(label); else state.cardio[wk].splice(i,1);
+    saveState(); renderWeek();
+  }
+  function markDone(row){
+    var end=row.querySelector('.end');
+    if(end){ end.textContent='✓ Done'; end.classList.add('on'); }
+  }
+
+  /* ---------- library ---------- */
+  var libCat="All";
+  function renderLib(){
+    var cats=["All","Squat","Hinge","Push","Pull","Resilience","Ignite","Mobility"];
+    var cc=document.getElementById('libcats');
+    cc.innerHTML="";
+    cats.forEach(function(c){
+      var b=document.createElement('button');
+      b.className='chip'+(c===libCat?' on':'');
+      b.textContent=c;
+      b.onclick=function(){ libCat=c; renderLib(); };
+      cc.appendChild(b);
+    });
+    var q=(document.getElementById('libsearch').value||'').toLowerCase();
+    var list=document.getElementById('liblist');
+    list.innerHTML="";
+    LIB.forEach(function(item){
+      if(libCat!=="All" && item[2]!==libCat) return;
+      if(q && item[0].toLowerCase().indexOf(q)<0) return;
+      var b=document.createElement('button');
+      b.className='row';
+      b.innerHTML='<span class="thumb">▶</span><span class="tx"><span class="t">'+item[0]+'</span><span class="s">'+item[1]+'</span></span>';
+      list.appendChild(b);
+    });
+    if(!list.children.length){
+      list.innerHTML='<div style="padding:20px 4px; font-size:13px; color:var(--faint);">No movements match. Clear the search to see the full library.</div>';
+    }
+  }
+  document.getElementById('libsearch').addEventListener('input',renderLib);
+  renderLib();
+
+  /* ---------- breathing ---------- */
+  var breathing=false, bTimer=null, bStep=0;
+  var steps=[['Inhale','in'],['Hold','in'],['Exhale',''],['Hold','']];
+  function toggleBreath(){
+    var c=document.getElementById('bcircle'), t=document.getElementById('btext'),
+        btn=document.getElementById('bbtn');
+    if(breathing){
+      breathing=false; clearInterval(bTimer); bTimer=null;
+      c.classList.remove('in'); t.textContent='Ready'; btn.textContent='Begin';
+      return;
+    }
+    breathing=true; btn.textContent='End';
+    bStep=0; applyStep();
+    bTimer=setInterval(function(){ bStep=(bStep+1)%4; applyStep(); },4000);
+    function applyStep(){
+      t.textContent=steps[bStep][0];
+      c.classList.toggle('in', steps[bStep][1]==='in');
+    }
+  }
+</script>
