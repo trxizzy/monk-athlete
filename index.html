@@ -4,13 +4,13 @@
   :root{
     --bg:#050506; --surface:#121214; --surface2:#1a1a1e; --line:#26262b;
     --text:#f4f4f5; --dim:#9a9aa2; --faint:#5e5e66;
-    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f;
+    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f; --ring3:#7da7c4;
     color-scheme: dark;
   }
   :root[data-theme="light"], :root[data-theme="dark"]{
     --bg:#050506; --surface:#121214; --surface2:#1a1a1e; --line:#26262b;
     --text:#f4f4f5; --dim:#9a9aa2; --faint:#5e5e66;
-    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f;
+    --accent:#c7a15d; --accent-dim:#8a7040; --good:#6fbf8f; --ring3:#7da7c4;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0; padding:0;}
@@ -219,7 +219,54 @@
   #restpill .lb{font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent);}
   #restpill .tm{font-size:18px; font-weight:300;}
 
-  /* progress */
+  /* progress: rings */
+  .rings-wrap{display:flex; align-items:center; gap:20px;}
+  .rings{width:150px; height:150px; flex-shrink:0;}
+  .rings circle{fill:none; stroke-width:13;}
+  .rings .tr{stroke:var(--surface2);}
+  .rings .pr{
+    stroke-linecap:round; transform:rotate(-90deg); transform-origin:100px 100px;
+    transition:stroke-dashoffset .8s ease;
+  }
+  @media (prefers-reduced-motion: reduce){ .rings .pr{transition:none;} }
+  .ring-legend{display:flex; flex-direction:column; gap:13px; flex:1;}
+  .rl{display:flex; align-items:center; gap:11px;}
+  .rl i{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .rl b{font-size:17px; font-weight:300; display:block; font-variant-numeric:tabular-nums;}
+  .rl span{font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);}
+
+  /* progress: calendar */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .cal-title{font-size:14px; font-weight:500;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-dow{margin-bottom:6px;}
+  .cal-dow span{text-align:center; font-size:9px; letter-spacing:.1em; color:var(--faint); text-transform:uppercase;}
+  .cal-cell{
+    aspect-ratio:1; border-radius:9px; background:var(--surface2);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums;
+  }
+  .cal-cell.blank{background:none;}
+  .cal-cell.future{opacity:.35;}
+  .cal-cell.today{border:1px solid var(--accent-dim); color:var(--text);}
+  .cal-dots{display:flex; gap:2px; height:4px;}
+  .cal-dots i{width:4px; height:4px; border-radius:50%;}
+  .cal-key{display:flex; gap:14px; margin-top:12px; font-size:9px; color:var(--faint); letter-spacing:.1em; text-transform:uppercase; flex-wrap:wrap;}
+  .cal-key i{width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:5px;}
+  .month-stats{display:flex; gap:12px; margin-top:14px; border-top:1px solid var(--line); padding-top:14px;}
+  .month-stats .m{flex:1;}
+  .month-stats .m .v{font-size:17px; font-weight:300; font-variant-numeric:tabular-nums;}
+  .month-stats .m .k{font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin-top:2px;}
+
+  /* session summary stat grid */
+  .sum-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-bottom:18px; text-align:left;
+  }
+  .sum-grid .sg{background:var(--surface2); padding:13px 12px;}
+  .sum-grid .v{font-size:23px; font-weight:300; font-variant-numeric:tabular-nums;}
+  .sum-grid .k{font-size:9px; letter-spacing:.13em; text-transform:uppercase; color:var(--faint); margin-top:3px;}
+
   .level-track{display:flex; gap:4px; margin:14px 0 8px;}
   .level-track i{flex:1; height:4px; border-radius:2px; background:var(--surface2);}
   .level-track i.on{background:var(--accent);}
@@ -440,6 +487,48 @@
 
     <!-- ============ PROGRESS ============ -->
     <section class="screen" id="scr-progress">
+
+      <div class="card">
+        <div class="eyebrow" style="margin:0 0 14px;">This Week</div>
+        <div class="rings-wrap">
+          <svg class="rings" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="tr" cx="100" cy="100" r="80"/>
+            <circle class="pr" id="ring-lift" cx="100" cy="100" r="80" stroke="#c7a15d"/>
+            <circle class="tr" cx="100" cy="100" r="62"/>
+            <circle class="pr" id="ring-cardio" cx="100" cy="100" r="62" stroke="#6fbf8f"/>
+            <circle class="tr" cx="100" cy="100" r="44"/>
+            <circle class="pr" id="ring-mind" cx="100" cy="100" r="44" stroke="#7da7c4"/>
+          </svg>
+          <div class="ring-legend">
+            <div class="rl"><i style="background:var(--accent)"></i><div><b id="rl-lift">0 / 3</b><span>Lifts</span></div></div>
+            <div class="rl"><i style="background:var(--good)"></i><div><b id="rl-cardio">0 / 3</b><span>Cardio</span></div></div>
+            <div class="rl"><i style="background:var(--ring3)"></i><div><b id="rl-mind">0 / 7</b><span>Check-ins</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cal-head">
+          <button class="backbtn" onclick="calShift(-1)" aria-label="Previous month">‹</button>
+          <div class="cal-title" id="cal-title"></div>
+          <button class="backbtn" onclick="calShift(1)" aria-label="Next month">›</button>
+        </div>
+        <div class="cal-grid cal-dow">
+          <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="cal-key">
+          <span><i style="background:var(--accent)"></i>Lift</span>
+          <span><i style="background:var(--good)"></i>Cardio</span>
+          <span><i style="background:var(--ring3)"></i>Check-in</span>
+        </div>
+        <div class="month-stats">
+          <div class="m"><div class="v" id="ms-active">0</div><div class="k">Active days</div></div>
+          <div class="m"><div class="v" id="ms-lifts">0</div><div class="k">Lifts</div></div>
+          <div class="m"><div class="v" id="ms-cardio">0</div><div class="k">Cardio</div></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="mission" style="padding:0;">
           <div class="kicker">Level System</div>
@@ -564,9 +653,11 @@
       <div class="kicker">Session Complete</div>
       <h2>Left better than you arrived.</h2>
       <div class="q" id="sum-sub"></div>
-      <div class="qual">
-        <span>Strength</span><span>Movement</span><span>Muscle</span>
-        <span>Conditioning</span><span>Longevity</span>
+      <div class="sum-grid">
+        <div class="sg"><div class="v" style="color:var(--accent)" id="sum-time">0:00</div><div class="k">Workout time</div></div>
+        <div class="sg"><div class="v" style="color:var(--good)" id="sum-rounds">0</div><div class="k">Rounds done</div></div>
+        <div class="sg"><div class="v" style="color:var(--ring3)" id="sum-phases">5</div><div class="k">Phases</div></div>
+        <div class="sg"><div class="v" id="sum-lifts">0</div><div class="k">Lifts this week</div></div>
       </div>
       <button class="btn" onclick="closeSummary()">Done</button>
     </div>
@@ -735,11 +826,13 @@
 
   /* ================= state (persists on this device) ================= */
   var day = 0;
-  var state = {logs:{}, checkins:{}, cardio:{}, sessions:{}};
+  var state = {logs:{}, checkins:{}, days:{}};
   try{
     var saved = localStorage.getItem('mam_state_v1');
     if(saved) state = Object.assign(state, JSON.parse(saved));
   }catch(e){}
+  delete state.cardio; delete state.sessions;   /* pre-calendar format, not date-keyed */
+  if(!state.days) state.days = {};
   function saveState(){
     try{ localStorage.setItem('mam_state_v1', JSON.stringify(state)); }catch(e){}
   }
@@ -749,6 +842,20 @@
     var d=new Date(); var mon=new Date(d);
     mon.setDate(d.getDate() - ((d.getDay()+6)%7));
     return mon.toISOString().slice(0,10);
+  }
+  function weekDates(){
+    var d=new Date(); var mon=new Date(d);
+    mon.setDate(d.getDate() - ((d.getDay()+6)%7));
+    var out=[];
+    for(var i=0;i<7;i++){
+      var t=new Date(mon); t.setDate(mon.getDate()+i);
+      out.push(t.toISOString().slice(0,10));
+    }
+    return out;
+  }
+  function dayRec(k){
+    state.days[k]=state.days[k]||{};
+    return state.days[k];
   }
 
   document.getElementById('hdate').textContent =
@@ -786,7 +893,7 @@
     ciDims.forEach(function(dim){ sum += (ciVals[dim[0]]||3); });
     var score=Math.round(sum/ciDims.length*20);
     state.checkins[todayKey()]={score:score};
-    saveState(); renderRecovery(); closeCheckin();
+    saveState(); renderRecovery(); renderWeek(); closeCheckin();
   }
   function renderRecovery(){
     var c=state.checkins[todayKey()];
@@ -805,14 +912,68 @@
     bars.forEach(function(b,i){ b.classList.toggle('on', i < Math.round(c.score/10)); });
   }
   function renderWeek(){
-    var lifts=(state.sessions[weekKey()]||[]).length;
-    document.getElementById('wk-lifts').textContent=Math.min(lifts,3)+' / 3';
-    var cd=(state.cardio[weekKey()]||[]);
-    document.getElementById('wk-cardio').textContent=Math.min(cd.length,3)+' / 3';
-    document.querySelectorAll('#scr-today .chips .chip').forEach(function(ch){
-      if(ch.closest('.ci-g')) return;
-      ch.classList.toggle('on', cd.indexOf(ch.textContent.replace(/^✓ /,''))>=0);
+    var wd=weekDates();
+    var lifts=0, cardioN=0, checks=0, labels={};
+    wd.forEach(function(k){
+      var rec=state.days[k]||{};
+      if(rec.lift!==undefined) lifts++;
+      if(rec.cardio){
+        cardioN+=rec.cardio.length;
+        rec.cardio.forEach(function(l){labels[l]=1;});
+      }
+      if(state.checkins[k]) checks++;
     });
+    document.getElementById('wk-lifts').textContent=Math.min(lifts,3)+' / 3';
+    document.getElementById('wk-cardio').textContent=Math.min(cardioN,3)+' / 3';
+    document.querySelectorAll('#scr-today .chips .chip').forEach(function(ch){
+      ch.classList.toggle('on', !!labels[ch.textContent.replace(/^✓ /,'')]);
+    });
+    setRing('ring-lift', 80, lifts/3, 'rl-lift', lifts+' / 3');
+    setRing('ring-cardio', 62, cardioN/3, 'rl-cardio', cardioN+' / 3');
+    setRing('ring-mind', 44, checks/7, 'rl-mind', checks+' / 7');
+    renderCal();
+  }
+  function setRing(id, r, p, lid, txt){
+    var C=2*Math.PI*r;
+    var el=document.getElementById(id);
+    el.setAttribute('stroke-dasharray', C);
+    el.setAttribute('stroke-dashoffset', C*(1-Math.min(1,Math.max(0,p))));
+    document.getElementById(lid).textContent=txt;
+  }
+
+  /* ---------- activity calendar ---------- */
+  var calDate=new Date(); calDate.setDate(1);
+  function calShift(n){
+    calDate.setMonth(calDate.getMonth()+n);
+    renderCal();
+  }
+  function renderCal(){
+    document.getElementById('cal-title').textContent=
+      calDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    var y=calDate.getFullYear(), m=calDate.getMonth();
+    var startBlanks=(new Date(y,m,1).getDay()+6)%7;   /* Monday-first */
+    var dim=new Date(y,m+1,0).getDate();
+    var today=todayKey();
+    var html='', active=0, mLifts=0, mCardio=0;
+    for(var b=0;b<startBlanks;b++) html+='<div class="cal-cell blank"></div>';
+    for(var d=1;d<=dim;d++){
+      var key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var rec=state.days[key]||{};
+      var hasLift=rec.lift!==undefined, hasCardio=!!(rec.cardio&&rec.cardio.length), hasCheck=!!state.checkins[key];
+      if(hasLift||hasCardio||hasCheck) active++;
+      if(hasLift) mLifts++;
+      if(hasCardio) mCardio+=rec.cardio.length;
+      var dots='';
+      if(hasLift) dots+='<i style="background:var(--accent)"></i>';
+      if(hasCardio) dots+='<i style="background:var(--good)"></i>';
+      if(hasCheck) dots+='<i style="background:var(--ring3)"></i>';
+      var cls='cal-cell'+(key===today?' today':'')+(key>today?' future':'');
+      html+='<div class="'+cls+'"><span>'+d+'</span><span class="cal-dots">'+dots+'</span></div>';
+    }
+    document.getElementById('cal-grid').innerHTML=html;
+    document.getElementById('ms-active').textContent=active;
+    document.getElementById('ms-lifts').textContent=mLifts;
+    document.getElementById('ms-cardio').textContent=mCardio;
   }
 
   /* ---------- today: day picker + arc ---------- */
@@ -1125,11 +1286,18 @@
   function finishSession(){
     stopRest();
     clearInterval(elapsedTimer); elapsedTimer=null;
-    var wk=weekKey();
-    state.sessions[wk]=state.sessions[wk]||[];
-    if(state.sessions[wk].indexOf(day)<0) state.sessions[wk].push(day);
+    var roundsDone=document.querySelectorAll('#phaselist .setdot.on').length;
+    var rec=dayRec(todayKey());
+    rec.lift=day;
+    rec.dur=elapsedSec;
+    rec.rounds=roundsDone;
     saveState(); renderWeek();
-    document.getElementById('sum-sub').textContent=WORKOUTS[day].name+' · '+document.getElementById('elapsed').textContent;
+    document.getElementById('sum-sub').textContent=WORKOUTS[day].name;
+    var sm=Math.floor(elapsedSec/60), ss=elapsedSec%60;
+    document.getElementById('sum-time').textContent=sm+':'+(ss<10?'0':'')+ss;
+    document.getElementById('sum-rounds').textContent=roundsDone;
+    document.getElementById('sum-phases').textContent=WORKOUTS[day].phases.length;
+    document.getElementById('sum-lifts').textContent=document.getElementById('wk-lifts').textContent;
     document.getElementById('summary').style.display='flex';
     document.querySelectorAll('#homearc .ph').forEach(function(p){p.classList.add('done');});
   }
@@ -1141,10 +1309,24 @@
   /* ---------- cardio + generic done ---------- */
   function cardioTap(chip){
     var label=chip.textContent.replace(/^✓ /,'');
-    var wk=weekKey();
-    state.cardio[wk]=state.cardio[wk]||[];
-    var i=state.cardio[wk].indexOf(label);
-    if(i<0) state.cardio[wk].push(label); else state.cardio[wk].splice(i,1);
+    var wd=weekDates();
+    var has=wd.some(function(k){
+      var r=state.days[k];
+      return r && r.cardio && r.cardio.indexOf(label)>=0;
+    });
+    if(has){
+      wd.forEach(function(k){
+        var r=state.days[k];
+        if(r && r.cardio){
+          var i=r.cardio.indexOf(label);
+          if(i>=0) r.cardio.splice(i,1);
+        }
+      });
+    }else{
+      var rec=dayRec(todayKey());
+      rec.cardio=rec.cardio||[];
+      rec.cardio.push(label);
+    }
     saveState(); renderWeek();
   }
   function markDone(row){
