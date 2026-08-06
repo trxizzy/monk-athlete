@@ -296,6 +296,20 @@
     width:44px; height:44px; border-radius:9px; background:var(--surface2); flex-shrink:0;
     display:flex; align-items:center; justify-content:center; color:var(--faint);
   }
+  .thumb.has{color:var(--accent); border:1px solid var(--accent-dim); background:rgba(199,161,93,.08);}
+  .exvid{
+    background:none; border:1px solid var(--accent-dim); color:var(--accent); border-radius:6px;
+    font-size:9px; letter-spacing:.08em; text-transform:uppercase; font-weight:600;
+    padding:3px 8px; cursor:pointer; font-family:inherit; margin-left:8px; vertical-align:2px;
+  }
+  #vidmodal{
+    position:fixed; inset:0; background:rgba(0,0,0,.94); z-index:70; display:none;
+    align-items:center; justify-content:center; flex-direction:column; padding:20px;
+  }
+  #vidmodal video{max-width:100%; max-height:68vh; border-radius:14px; border:1px solid var(--line); background:#000;}
+  #vidmodal .vt{font-size:14px; font-weight:500; margin:16px 0 2px;}
+  #vidmodal .vs{font-size:11px; color:var(--faint); letter-spacing:.08em; text-transform:uppercase; margin-bottom:16px;}
+  #vidmodal .btn{max-width:220px;}
 
   /* mind */
   .breathe-wrap{display:flex; flex-direction:column; align-items:center; padding:26px 0 10px;}
@@ -581,7 +595,7 @@
       <input class="search" id="libsearch" placeholder="Search movements…" aria-label="Search movements">
       <div class="catchips" id="libcats"></div>
       <div class="card" style="padding:6px 16px;" id="liblist"></div>
-      <div class="principle" style="margin-top:18px;">Every movement gets a short demo video from Coach Razz, the why behind it, and the exact cues from your sessions. (Video slots are ready — film 15–30 sec clips and we'll drop them in.)</div>
+      <div class="principle" style="margin-top:18px;">Movements marked <b>Video</b> have a demo from Coach Razz — tap to watch. The rest get theirs as you two film them.</div>
     </section>
 
     <!-- ============ MIND ============ -->
@@ -622,6 +636,13 @@
   <button id="restpill" onclick="stopRest()">
     <span class="lb">Rest</span><span class="tm" id="resttm">1:15</span>
   </button>
+
+  <div id="vidmodal" role="dialog" aria-modal="true">
+    <video id="vidplayer" controls playsinline preload="metadata"></video>
+    <div class="vt" id="vid-title"></div>
+    <div class="vs">Demo · Coach Razz</div>
+    <button class="btn" onclick="closeVideo()">Close</button>
+  </div>
 
   <div id="avadjust" role="dialog" aria-modal="true">
     <div class="box">
@@ -821,8 +842,30 @@
     ["Shoulder CARs","Arrive · Shoulders","Mobility"],
     ["90/90 hip stretch","Center · Hips","Mobility"],
     ["Hanging decompression","Center · Spine","Mobility"],
-    ["Box breathing","Center · Breath","Mobility"]
+    ["Box breathing","Center · Breath","Mobility"],
+    ["Walking lunges","Ignite · Legs","Ignite"]
   ];
+
+  /* coach demo videos (files live in /videos next to this page) */
+  var VIDEOS = {
+    "Trap bar deadlift": "videos/trap-bar-deadlift.mp4",
+    "Chest supported row": "videos/chest-supported-row.mp4",
+    "Walking lunges": "videos/walking-lunges.mp4",
+    "Walking DB lunges": "videos/walking-lunges.mp4"
+  };
+  function playVideo(name){
+    if(!VIDEOS[name]) return;
+    var v=document.getElementById('vidplayer');
+    v.src=VIDEOS[name];
+    document.getElementById('vid-title').textContent=name;
+    document.getElementById('vidmodal').style.display='flex';
+    v.play().catch(function(){});
+  }
+  function closeVideo(){
+    var v=document.getElementById('vidplayer');
+    v.pause(); v.removeAttribute('src'); v.load();
+    document.getElementById('vidmodal').style.display='none';
+  }
 
   /* ================= state (persists on this device) ================= */
   var day = 0;
@@ -1215,7 +1258,8 @@
         +'<div class="phase-body">';
       var logPhase = (p.n==='Build' || p.n==='Resilience');
       p.ex.forEach(function(e){
-        html+='<div class="ex"><div class="top"><span class="nm">'+esc(e.nm)+'</span><span class="rx">'+esc(e.rx)+'</span></div>';
+        var vbtn=VIDEOS[e.nm] ? '<button class="exvid" data-v="'+esc(e.nm)+'">▶ Demo</button>' : '';
+        html+='<div class="ex"><div class="top"><span class="nm">'+esc(e.nm)+vbtn+'</span><span class="rx">'+esc(e.rx)+'</span></div>';
         if(e.cue) html+='<div class="cue"><b>Coach Razz says</b>'+esc(e.cue)+'</div>';
         if(logPhase){
           var last=state.logs[e.nm];
@@ -1238,6 +1282,10 @@
       list.appendChild(ph);
     });
   }
+  document.getElementById('phaselist').addEventListener('click', function(ev){
+    var b=ev.target.closest('.exvid');
+    if(b) playVideo(b.dataset.v);
+  });
   document.getElementById('phaselist').addEventListener('change', function(ev){
     var inp=ev.target;
     if(!inp.dataset || !inp.dataset.ex) return;
@@ -1353,9 +1401,11 @@
     LIB.forEach(function(item){
       if(libCat!=="All" && item[2]!==libCat) return;
       if(q && item[0].toLowerCase().indexOf(q)<0) return;
+      var has=!!VIDEOS[item[0]];
       var b=document.createElement('button');
       b.className='row';
-      b.innerHTML='<span class="thumb">▶</span><span class="tx"><span class="t">'+item[0]+'</span><span class="s">'+item[1]+'</span></span>';
+      b.innerHTML='<span class="thumb'+(has?' has':'')+'">▶</span><span class="tx"><span class="t">'+item[0]+'</span><span class="s">'+item[1]+(has?' · Video':'')+'</span></span>';
+      if(has) b.onclick=function(){ playVideo(item[0]); };
       list.appendChild(b);
     });
     if(!list.children.length){
