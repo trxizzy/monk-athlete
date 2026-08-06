@@ -86,8 +86,9 @@
   .arc .ph{flex:1; text-align:center;}
   .arc .ph i{display:block; height:4px; border-radius:2px; background:var(--surface2); margin-bottom:7px;}
   .arc .ph.done i{background:var(--accent);}
+  .arc .ph.now i{background:var(--text);}
   .arc .ph b{font-size:8px; letter-spacing:.08em; color:var(--faint); font-weight:600; text-transform:uppercase;}
-  .arc .ph.done b{color:var(--dim);}
+  .arc .ph.done b,.arc .ph.now b{color:var(--dim);}
   .btn{
     display:block; width:100%; border:0; border-radius:10px; padding:15px;
     font-size:13px; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
@@ -296,15 +297,30 @@
   .catchips{display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:4px; scrollbar-width:none;}
   .catchips::-webkit-scrollbar{display:none;}
   .catchips .chip{white-space:nowrap; flex-shrink:0;}
-  .thumb{
-    width:44px; height:44px; border-radius:9px; background:var(--surface2); flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; color:var(--faint);
+  .lib-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .lib-card{
+    position:relative; aspect-ratio:4/5; border-radius:13px; overflow:hidden;
+    background:var(--surface); border:1px solid var(--line); cursor:pointer; padding:0;
+    font-family:inherit; text-align:left; display:block; width:100%; color:var(--text);
   }
-  .thumb.has{
-    color:#fff; border:1px solid var(--accent-dim);
-    background-size:cover; background-position:center top;
-    text-shadow:0 1px 6px rgba(0,0,0,.8);
+  .lib-card .img{position:absolute; inset:0; background-size:cover; background-position:center top;}
+  .lib-card .mono{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:44px; font-weight:200; color:var(--faint); opacity:.55;
   }
+  .lib-card .grad{
+    position:absolute; inset:0;
+    background:linear-gradient(to top, rgba(5,5,6,.94) 0%, rgba(5,5,6,.42) 42%, transparent 68%);
+  }
+  .lib-card .info{position:absolute; left:11px; right:11px; bottom:10px;}
+  .lib-card .t{font-size:14px; font-weight:600; line-height:1.25; display:block;}
+  .lib-card .s{font-size:10px; color:var(--dim); margin-top:2px; display:block;}
+  .lib-card .vbadge{
+    position:absolute; top:9px; right:9px; font-size:9px; letter-spacing:.1em; text-transform:uppercase;
+    font-weight:700; color:#fff; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.28);
+    border-radius:999px; padding:4px 9px;
+  }
+  .lib-card:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
   .exvid{
     background:none; border:1px solid var(--accent-dim); color:var(--accent); border-radius:6px;
     font-size:10px; letter-spacing:.08em; text-transform:uppercase; font-weight:600;
@@ -613,7 +629,7 @@
     <section class="screen" id="scr-library">
       <input class="search" id="libsearch" placeholder="Search movements…" aria-label="Search movements">
       <div class="catchips" id="libcats"></div>
-      <div class="card" style="padding:6px 16px;" id="liblist"></div>
+      <div class="lib-grid" id="liblist"></div>
       <div class="principle" style="margin-top:18px;">Movements marked <b>Video</b> have a demo from Coach Razz — tap to watch. The rest get theirs as you two film them.</div>
     </section>
 
@@ -1067,11 +1083,19 @@
     });
     var arc=document.getElementById('homearc');
     arc.innerHTML="";
-    w.phases.forEach(function(p){
-      var d=document.createElement('div'); d.className='ph';
-      d.innerHTML='<i></i><b>'+p.n+'</b>';
+    var rec=state.days[todayKey()]||{};
+    var doneList=(rec.phasesFor===day && rec.phasesDone) ? rec.phasesDone : [];
+    w.phases.forEach(function(p,i){
+      var d=document.createElement('div');
+      d.className='ph'+(doneList.indexOf(i)>=0?' done':'');
+      d.innerHTML='<i></i><b>'+esc(p.n)+'</b>';
       arc.appendChild(d);
     });
+    if(doneList.length && doneList.length<w.phases.length){
+      for(var i=0;i<w.phases.length;i++){
+        if(doneList.indexOf(i)<0){ arc.children[i].classList.add('now'); break; }
+      }
+    }
   }
   renderToday();
   renderRecovery();
@@ -1313,6 +1337,26 @@
       ph.innerHTML=html;
       list.appendChild(ph);
     });
+    /* restore phases already completed today for this workout */
+    var rec=state.days[todayKey()]||{};
+    if(rec.phasesFor===day && rec.phasesDone && rec.phasesDone.length){
+      rec.phasesDone.forEach(function(pi){
+        var ph=list.children[pi];
+        if(!ph) return;
+        ph.classList.add('done');
+        ph.classList.remove('open');
+        ph.querySelectorAll('.setdot').forEach(function(d){d.classList.add('on');});
+        var st=ph.querySelector('.st');
+        st.textContent='Done'; st.classList.add('done');
+      });
+      for(var i=0;i<list.children.length;i++){
+        if(rec.phasesDone.indexOf(i)<0){
+          Array.prototype.forEach.call(list.children,function(c){c.classList.remove('open');});
+          list.children[i].classList.add('open');
+          break;
+        }
+      }
+    }
   }
   document.getElementById('phaselist').addEventListener('click', function(ev){
     var b=ev.target.closest('.exvid');
@@ -1335,17 +1379,31 @@
     var body=dot.closest('.phase-body'), phase=body.closest('.phase');
     var all=body.querySelectorAll('.setdot'), on=body.querySelectorAll('.setdot.on');
     var st=phase.querySelector('.st');
+    var pIdx=Array.prototype.indexOf.call(document.querySelectorAll('#phaselist .phase'), phase);
     if(on.length===all.length){
       st.textContent='Done'; st.classList.add('done');
       phase.classList.add('done');
       phase.classList.remove('open');
       var next=phase.nextElementSibling;
       if(next && next.classList.contains('phase')) next.classList.add('open');
+      markPhaseDone(pIdx, true);
     }else{
       st.classList.remove('done');
       phase.classList.remove('done');
+      markPhaseDone(pIdx, false);
       st.textContent = all.length>1 ? all.length+' rounds' : ' ';
     }
+  }
+
+  function markPhaseDone(i, on){
+    var rec=dayRec(todayKey());
+    if(rec.phasesFor!==day){ rec.phasesFor=day; rec.phasesDone=[]; }
+    rec.phasesDone=rec.phasesDone||[];
+    var ix=rec.phasesDone.indexOf(i);
+    if(on && ix<0) rec.phasesDone.push(i);
+    if(!on && ix>=0) rec.phasesDone.splice(ix,1);
+    saveState();
+    renderToday();
   }
 
   /* ---------- rest timer ---------- */
@@ -1376,6 +1434,8 @@
     rec.lift=day;
     rec.dur=elapsedSec;
     rec.rounds=roundsDone;
+    rec.phasesFor=day;
+    rec.phasesDone=WORKOUTS[day].phases.map(function(_,i){return i;});
     saveState(); renderWeek();
     document.getElementById('sum-sub').textContent=WORKOUTS[day].name;
     var sm=Math.floor(elapsedSec/60), ss=elapsedSec%60;
@@ -1384,7 +1444,7 @@
     document.getElementById('sum-phases').textContent=WORKOUTS[day].phases.length;
     document.getElementById('sum-lifts').textContent=document.getElementById('wk-lifts').textContent;
     document.getElementById('summary').style.display='flex';
-    document.querySelectorAll('#homearc .ph').forEach(function(p){p.classList.add('done');});
+    renderToday();
   }
   function closeSummary(){
     document.getElementById('summary').style.display='none';
@@ -1440,16 +1500,19 @@
       if(q && item[0].toLowerCase().indexOf(q)<0) return;
       var has=!!VIDEOS[item[0]];
       var b=document.createElement('button');
-      b.className='row';
-      var thumb=has
-        ? '<span class="thumb has" style="background-image:url(\''+VIDEOS[item[0]]+'.jpg\')">▶</span>'
-        : '<span class="thumb">▶</span>';
-      b.innerHTML=thumb+'<span class="tx"><span class="t">'+item[0]+'</span><span class="s">'+item[1]+(has?' · Video':'')+'</span></span>';
+      b.className='lib-card';
+      var visual=has
+        ? '<span class="img" style="background-image:url(\''+VIDEOS[item[0]]+'.jpg\')"></span>'
+        : '<span class="mono">'+esc(item[0].charAt(0))+'</span>';
+      b.innerHTML=visual
+        +'<span class="grad"></span>'
+        +(has?'<span class="vbadge">▶ Video</span>':'')
+        +'<span class="info"><span class="t">'+item[0]+'</span><span class="s">'+item[1]+'</span></span>';
       if(has) b.onclick=function(){ playVideo(item[0]); };
       list.appendChild(b);
     });
     if(!list.children.length){
-      list.innerHTML='<div style="padding:20px 4px; font-size:13px; color:var(--faint);">No movements match. Clear the search to see the full library.</div>';
+      list.innerHTML='<div style="grid-column:1/-1; padding:20px 4px; font-size:13px; color:var(--faint);">No movements match. Clear the search to see the full library.</div>';
     }
   }
   document.getElementById('libsearch').addEventListener('input',renderLib);
