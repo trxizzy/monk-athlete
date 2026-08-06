@@ -131,6 +131,9 @@
     font-size:14px; font-weight:300; color:var(--dim); line-height:1.6;
   }
   .principle b{color:var(--text); font-weight:500;}
+  .card>.kicker{display:block; margin-bottom:6px;}
+  .card-title{font-size:26px; font-weight:300; letter-spacing:-.01em; line-height:1.15; margin:0 0 12px; color:var(--text);}
+  .card-sub{font-size:12px; color:var(--faint); margin:-6px 0 14px;}
 
   /* session */
   .session-top{display:flex; align-items:center; gap:12px; padding:6px 4px 14px;}
@@ -242,7 +245,7 @@
 
   /* progress: calendar */
   .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
-  .cal-title{font-size:14px; font-weight:500;}
+  .cal-title{font-size:21px; font-weight:300; letter-spacing:-.01em;}
   .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
   .cal-dow{margin-bottom:6px;}
   .cal-dow span{text-align:center; font-size:9px; letter-spacing:.1em; color:var(--faint); text-transform:uppercase;}
@@ -368,15 +371,32 @@
   .letter b{color:var(--text); font-weight:500;}
   .letter .sig{margin-top:12px; color:var(--accent); font-size:11px; letter-spacing:.18em; text-transform:uppercase; font-weight:600;}
 
-  /* overlays: summary + morning check-in + photo adjust */
-  #summary,#checkin,#avadjust{
+  /* overlays: summary + morning check-in + photo adjust + cardio log */
+  #summary,#checkin,#avadjust,#cardiolog{
     position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:60; display:none;
     align-items:center; justify-content:center; padding:24px;
   }
-  #summary .box,#checkin .box,#avadjust .box{
+  #summary .box,#checkin .box,#avadjust .box,#cardiolog .box{
     background:var(--surface); border:1px solid var(--line); border-radius:16px;
     padding:28px 22px; max-width:340px; width:100%; text-align:center;
   }
+  #cardiolog .box{text-align:left; max-height:86vh; overflow-y:auto;}
+  #cardiolog h2{font-size:20px; font-weight:300; margin:6px 0 16px;}
+  #cl-acts.flash{outline:2px solid #c96f6f; outline-offset:4px; border-radius:8px;}
+  .cd-active{
+    border:1px solid var(--accent-dim); background:rgba(199,161,93,.07);
+    border-radius:12px; padding:16px; margin-bottom:14px; text-align:center;
+  }
+  .cd-al{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+  .cd-at{font-size:34px; font-weight:200; font-variant-numeric:tabular-nums; margin-top:4px;}
+  .cd-row{display:flex; gap:10px; align-items:center; padding:13px 0; border-bottom:1px solid var(--line);}
+  .cd-row .cd-a{flex:1; font-size:15px; font-weight:500;}
+  .cd-row .cd-m{color:var(--good); font-size:14px; font-variant-numeric:tabular-nums;}
+  .cd-row .cd-d{color:var(--faint); font-size:12px; width:34px; text-align:right;}
+  .cd-x{background:none; border:0; color:var(--faint); cursor:pointer; font-size:14px; padding:4px 2px 4px 8px; font-family:inherit;}
+  .cd-empty{font-size:13px; color:var(--faint); padding:4px 0 14px;}
+  #cardio-list .cd-row:last-of-type{border-bottom:0;}
+  #cardio-list{margin-bottom:6px;}
   .av-frame{
     width:240px; height:240px; border-radius:50%; overflow:hidden; position:relative;
     margin:16px auto 14px; border:1px solid var(--accent-dim); background:var(--surface2);
@@ -466,20 +486,22 @@
         <button class="btn ghost" onclick="openEditor()" style="margin-top:8px;">Customize Workout</button>
       </div>
 
-      <div class="eyebrow">Conditioning · <b>2–3 × per week, 20–30 min</b></div>
       <div class="card">
-        <div style="font-size:12px; color:var(--faint); margin-bottom:12px;">After lifts or on off days. Keep it simple — just keep the heart rate up. Tap when done.</div>
-        <div class="chips">
-          <button class="chip" onclick="cardioTap(this)">Incline walk</button>
-          <button class="chip" onclick="cardioTap(this)">Row</button>
-          <button class="chip" onclick="cardioTap(this)">Assault bike</button>
-          <button class="chip" onclick="cardioTap(this)">Cycle</button>
-          <button class="chip" onclick="cardioTap(this)">Hike</button>
+        <div class="kicker">2–3 × Per Week</div>
+        <div class="card-title">Conditioning</div>
+        <div class="card-sub">20–30 minutes · after lifts or on off days</div>
+        <div id="cardio-active" class="cd-active" style="display:none;">
+          <div class="cd-al" id="ca-act"></div>
+          <div class="cd-at" id="ca-time">0:00</div>
+          <button class="btn" style="margin-top:12px;" onclick="endCardio()">End Session</button>
         </div>
+        <div id="cardio-list"></div>
+        <button class="btn ghost" onclick="openCardio()">Log Conditioning</button>
       </div>
 
-      <div class="eyebrow">Daily Practice</div>
-      <div class="card" style="padding:6px 16px;">
+      <div class="card" style="padding:16px 16px 6px;">
+        <div class="kicker">Every Day</div>
+        <div class="card-title" style="margin-bottom:0;">Daily Practice</div>
         <button class="row" onclick="markDone(this)">
           <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
           <span class="tx"><span class="t">Monk Maintenance</span><span class="s">10-min daily reset — hips, spine, breath</span></span>
@@ -492,16 +514,20 @@
         </button>
       </div>
 
-      <div class="eyebrow">From Your Coach</div>
       <div class="card letter">
+        <div class="kicker">Week 1</div>
+        <div class="card-title">From Your Coach</div>
         <b>Great work today, Izzy. That was Day 1.</b><br>
         From here you're training on your own every Wednesday and Friday — all three workouts each week, plus 2–3 cardio sessions.
         Stay consistent, focus on quality movement over ego, and trust the process. Every workout is another step toward becoming stronger, more athletic, and more resilient. Let's get to work. 💪
         <div class="sig">— Coach Razz</div>
       </div>
 
-      <div class="eyebrow">The Idea</div>
-      <div class="principle"><b>Become stronger without becoming broken.</b> No chasing soreness. Every session has a purpose — strength, movement, muscle, conditioning, longevity.</div>
+      <div class="card">
+        <div class="kicker">The Method</div>
+        <div class="card-title">The Idea</div>
+        <div class="principle" style="margin:0;"><b>Become stronger without becoming broken.</b> No chasing soreness. Every session has a purpose — strength, movement, muscle, conditioning, longevity.</div>
+      </div>
     </section>
 
     <!-- ============ SESSION ============ -->
@@ -538,7 +564,8 @@
     <section class="screen" id="scr-progress">
 
       <div class="card">
-        <div class="eyebrow" style="margin:0 0 14px;">This Week</div>
+        <div class="kicker">This Week · Resets Monday</div>
+        <div class="card-title">Activity</div>
         <div class="rings-wrap">
           <svg class="rings" viewBox="0 0 200 200" aria-hidden="true">
             <circle class="tr" cx="100" cy="100" r="80"/>
@@ -557,6 +584,7 @@
       </div>
 
       <div class="card">
+        <div class="kicker">Consistency</div>
         <div class="cal-head">
           <button class="backbtn" onclick="calShift(-1)" aria-label="Previous month">‹</button>
           <div class="cal-title" id="cal-title"></div>
@@ -581,15 +609,16 @@
       <div class="card">
         <div class="mission" style="padding:0;">
           <div class="kicker">Level System</div>
-          <h1 style="font-size:22px;">Foundation</h1>
+          <h1>Foundation</h1>
           <div class="sub">Week 1 — building the base. Performance level unlocks after consistent Week 6.</div>
         </div>
         <div class="level-track"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <div class="level-names"><span class="cur">Foundation</span><span>Performance</span><span>Mastery</span></div>
       </div>
 
-      <div class="eyebrow">Key Lifts · Working Weight</div>
-      <div class="card" style="padding:6px 18px;">
+      <div class="card" style="padding:16px 18px 6px;">
+        <div class="kicker">Tracked Every Session</div>
+        <div class="card-title" style="margin-bottom:0;">Key Lifts</div>
         <div class="lift">
           <div class="top"><span class="nm">Goblet squat</span><span class="vl">— <small>log Day 1 to start</small></span></div>
           <div class="spark"><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:20%"></i><i style="height:26%"></i></div>
@@ -608,8 +637,9 @@
         </div>
       </div>
 
-      <div class="eyebrow">What You're Building</div>
-      <div class="card" style="padding:6px 16px;">
+      <div class="card" style="padding:16px 16px 6px;">
+        <div class="kicker">This Program</div>
+        <div class="card-title" style="margin-bottom:0;">What You're Building</div>
         <div class="row" style="cursor:default;"><span class="tx"><span class="t">Strength</span><span class="s">Squat · push · pull · hinge, progressed weekly</span></span></div>
         <div class="row" style="cursor:default;"><span class="tx"><span class="t">Conditioning</span><span class="s">Ignite circuits + 2–3 cardio sessions</span></span></div>
         <div class="row" style="cursor:default;"><span class="tx"><span class="t">Durability</span><span class="s">Nordics, tibialis, Copenhagen, single-leg work</span></span></div>
@@ -617,8 +647,9 @@
         <div class="row" style="cursor:default;"><span class="tx"><span class="t">Balance &amp; coordination</span><span class="s">Single-leg RDL, hip airplanes, cossacks</span></span></div>
       </div>
 
-      <div class="eyebrow">Weekly Review</div>
       <div class="card letter">
+        <div class="kicker">Week 1</div>
+        <div class="card-title">Weekly Review</div>
         <b>Coach's note — Week 1.</b>
         Day 1 is in the books. This week is about learning the movements and finding your working weights — leave 2 reps in the tank everywhere. Log your weights so we can progress them next week.
         <div class="sig">— Coach Razz</div>
@@ -630,21 +661,28 @@
       <input class="search" id="libsearch" placeholder="Search movements…" aria-label="Search movements">
       <div class="catchips" id="libcats"></div>
       <div class="lib-grid" id="liblist"></div>
-      <div class="principle" style="margin-top:18px;">Movements marked <b>Video</b> have a demo from Coach Razz — tap to watch. The rest get theirs as you two film them.</div>
+      <div class="card" style="margin-top:14px;">
+        <div class="kicker">Coach Demos</div>
+        <div class="card-title">About the Library</div>
+        <div class="principle" style="margin:0;">Movements marked <b>Video</b> have a demo from Coach Razz — tap to watch. The rest get theirs as you two film them.</div>
+      </div>
     </section>
 
     <!-- ============ MIND ============ -->
     <section class="screen" id="scr-mind">
       <div class="card">
-        <div class="breathe-wrap">
+        <div class="kicker">Anytime You Need It</div>
+        <div class="card-title" style="margin-bottom:0;">Breathwork</div>
+        <div class="breathe-wrap" style="padding-top:10px;">
           <div class="bcircle" id="bcircle"><span class="bt" id="btext">Ready</span></div>
           <div style="font-size:12px; color:var(--faint); margin-bottom:14px;">Box breathing · 4 in · 4 hold · 4 out · 4 hold</div>
           <button class="btn" style="max-width:220px;" id="bbtn" onclick="toggleBreath()">Begin</button>
         </div>
       </div>
 
-      <div class="eyebrow">Practices</div>
-      <div class="card" style="padding:6px 16px;">
+      <div class="card" style="padding:16px 16px 6px;">
+        <div class="kicker">Morning & Night</div>
+        <div class="card-title" style="margin-bottom:0;">Practices</div>
         <button class="row" onclick="markDone(this)">
           <span class="ic">☾</span>
           <span class="tx"><span class="t">Pre-sleep down-shift</span><span class="s">10 min · lowers heart rate before bed</span></span>
@@ -662,8 +700,11 @@
         </button>
       </div>
 
-      <div class="eyebrow">Why This Matters</div>
-      <div class="principle"><b>Leave better than you arrived.</b> CENTER isn't a cooldown — it's mobility, breathing, and recovery so the nervous system leaves calm instead of fried.</div>
+      <div class="card">
+        <div class="kicker">The Method</div>
+        <div class="card-title">Why This Matters</div>
+        <div class="principle" style="margin:0;"><b>Leave better than you arrived.</b> CENTER isn't a cooldown — it's mobility, breathing, and recovery so the nervous system leaves calm instead of fried.</div>
+      </div>
     </section>
 
   </main>
@@ -694,6 +735,24 @@
         <button class="danger" onclick="removeAvatar()">Remove</button>
         <button onclick="closeAvatarAdjust()">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <div id="cardiolog" role="dialog" aria-modal="true">
+    <div class="box">
+      <div class="kicker">Conditioning</div>
+      <h2>Log a cardio session</h2>
+      <div class="chips" id="cl-acts" style="margin-bottom:18px;"></div>
+      <div class="eyebrow" style="margin:0 0 8px;">Minutes</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:20px;">
+        <input type="number" id="cl-min" class="ed-input" style="width:88px; font-size:18px; text-align:center;" placeholder="25" inputmode="numeric" aria-label="Minutes">
+        <button class="chip" onclick="document.getElementById('cl-min').value=20">20</button>
+        <button class="chip" onclick="document.getElementById('cl-min').value=25">25</button>
+        <button class="chip" onclick="document.getElementById('cl-min').value=30">30</button>
+      </div>
+      <button class="btn" onclick="startCardioNow()">Start Live Session</button>
+      <button class="btn ghost" onclick="saveCardioLog()" style="margin-top:8px;">Save Without Timer</button>
+      <button class="btn ghost" onclick="closeCardio()" style="margin-top:8px;">Cancel</button>
     </div>
   </div>
 
@@ -891,6 +950,14 @@
     "Walking lunges": "videos/walking-lunges",
     "Walking DB lunges": "videos/walking-lunges"
   };
+  /* movements with a photo but no video yet */
+  var THUMBS = {
+    "Heel elevated goblet squat": "videos/heel-elevated-goblet-squat.jpg",
+    "Front squat": "videos/front-squat.jpg"
+  };
+  function thumbOf(name){
+    return VIDEOS[name] ? VIDEOS[name]+'.jpg' : THUMBS[name];
+  }
   function playVideo(name){
     if(!VIDEOS[name]) return;
     var v=document.getElementById('vidplayer');
@@ -1004,21 +1071,27 @@
   }
   function renderWeek(){
     var wd=weekDates();
-    var lifts=0, cardioN=0, checks=0, labels={};
+    var lifts=0, cardioN=0, checks=0, rows='';
     wd.forEach(function(k){
       var rec=state.days[k]||{};
       if(rec.lift!==undefined) lifts++;
       if(rec.cardio){
         cardioN+=rec.cardio.length;
-        rec.cardio.forEach(function(l){labels[l]=1;});
+        rec.cardio.forEach(function(e,i){
+          e=cardioEntry(e);
+          var dl=new Date(k+'T00:00').toLocaleDateString('en-US',{weekday:'short'});
+          rows+='<div class="cd-row"><span class="cd-a">'+esc(e.a)+'</span>'
+            +'<span class="cd-m">'+(e.min?e.min+' min':'')+'</span>'
+            +'<span class="cd-d">'+dl+'</span>'
+            +'<button class="cd-x" data-k="'+k+'" data-i="'+i+'" aria-label="Remove '+esc(e.a)+'">✕</button></div>';
+        });
       }
       if(state.checkins[k]) checks++;
     });
+    document.getElementById('cardio-list').innerHTML=
+      rows || '<div class="cd-empty">Nothing logged this week yet. 2–3 sessions is the goal — after lifts or on off days.</div>';
     document.getElementById('wk-lifts').textContent=Math.min(lifts,3)+' / 3';
     document.getElementById('wk-cardio').textContent=Math.min(cardioN,3)+' / 3';
-    document.querySelectorAll('#scr-today .chips .chip').forEach(function(ch){
-      ch.classList.toggle('on', !!labels[ch.textContent.replace(/^✓ /,'')]);
-    });
     setRing('ring-lift', 80, lifts/3, 'rl-lift', lifts+' / 3');
     setRing('ring-cardio', 62, cardioN/3, 'rl-cardio', cardioN+' / 3');
     setRing('ring-mind', 44, checks/7, 'rl-mind', checks+' / 7');
@@ -1451,29 +1524,87 @@
     showScreen('today');
   }
 
-  /* ---------- cardio + generic done ---------- */
-  function cardioTap(chip){
-    var label=chip.textContent.replace(/^✓ /,'');
-    var wd=weekDates();
-    var has=wd.some(function(k){
-      var r=state.days[k];
-      return r && r.cardio && r.cardio.indexOf(label)>=0;
-    });
-    if(has){
-      wd.forEach(function(k){
-        var r=state.days[k];
-        if(r && r.cardio){
-          var i=r.cardio.indexOf(label);
-          if(i>=0) r.cardio.splice(i,1);
-        }
-      });
-    }else{
-      var rec=dayRec(todayKey());
-      rec.cardio=rec.cardio||[];
-      rec.cardio.push(label);
-    }
-    saveState(); renderWeek();
+  /* ---------- cardio sessions ---------- */
+  var CARDIO_ACTS=['Incline walk','Treadmill','StairMaster','Row','Assault bike','Cycle','Hike','Other'];
+  var clAct=null, caTimer=null;
+  function cardioEntry(e){   /* older entries were plain strings */
+    return (typeof e==='string') ? {a:e, min:null} : e;
   }
+  function openCardio(){
+    clAct=null;
+    var wrap=document.getElementById('cl-acts');
+    wrap.classList.remove('flash');
+    wrap.innerHTML='';
+    CARDIO_ACTS.forEach(function(a){
+      var b=document.createElement('button');
+      b.className='chip'; b.textContent=a;
+      b.onclick=function(){
+        clAct=a;
+        wrap.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on');});
+        b.classList.add('on');
+        wrap.classList.remove('flash');
+      };
+      wrap.appendChild(b);
+    });
+    document.getElementById('cl-min').value='';
+    document.getElementById('cardiolog').style.display='flex';
+  }
+  function closeCardio(){ document.getElementById('cardiolog').style.display='none'; }
+  function needAct(){
+    if(clAct) return false;
+    var wrap=document.getElementById('cl-acts');
+    wrap.classList.add('flash');
+    setTimeout(function(){wrap.classList.remove('flash');},900);
+    return true;
+  }
+  function saveCardioLog(){
+    if(needAct()) return;
+    var min=parseInt(document.getElementById('cl-min').value,10);
+    var rec=dayRec(todayKey());
+    rec.cardio=rec.cardio||[];
+    rec.cardio.push({a:clAct, min:(min>0?min:null)});
+    saveState(); renderWeek(); closeCardio();
+  }
+  function startCardioNow(){
+    if(needAct()) return;
+    state.cardioActive={a:clAct, start:Date.now()};
+    saveState(); closeCardio(); renderCardioActive();
+  }
+  function renderCardioActive(){
+    var el=document.getElementById('cardio-active');
+    clearInterval(caTimer); caTimer=null;
+    if(!state.cardioActive){ el.style.display='none'; return; }
+    el.style.display='block';
+    document.getElementById('ca-act').textContent=state.cardioActive.a;
+    function tick(){
+      var s=Math.floor((Date.now()-state.cardioActive.start)/1000);
+      document.getElementById('ca-time').textContent=
+        Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    }
+    tick();
+    caTimer=setInterval(tick,1000);
+  }
+  function endCardio(){
+    var act=state.cardioActive;
+    if(!act) return;
+    var min=Math.max(1, Math.round((Date.now()-act.start)/60000));
+    var dkey=new Date(act.start).toISOString().slice(0,10);
+    var rec=dayRec(dkey);
+    rec.cardio=rec.cardio||[];
+    rec.cardio.push({a:act.a, min:min});
+    delete state.cardioActive;
+    saveState(); renderCardioActive(); renderWeek();
+  }
+  document.getElementById('cardio-list').addEventListener('click', function(ev){
+    var b=ev.target.closest('.cd-x');
+    if(!b) return;
+    var rec=state.days[b.dataset.k];
+    if(rec && rec.cardio){
+      rec.cardio.splice(+b.dataset.i,1);
+      saveState(); renderWeek();
+    }
+  });
+  renderCardioActive();
   function markDone(row){
     var end=row.querySelector('.end');
     if(end){ end.textContent='✓ Done'; end.classList.add('on'); }
@@ -1499,10 +1630,11 @@
       if(libCat!=="All" && item[2]!==libCat) return;
       if(q && item[0].toLowerCase().indexOf(q)<0) return;
       var has=!!VIDEOS[item[0]];
+      var thumb=thumbOf(item[0]);
       var b=document.createElement('button');
       b.className='lib-card';
-      var visual=has
-        ? '<span class="img" style="background-image:url(\''+VIDEOS[item[0]]+'.jpg\')"></span>'
+      var visual=thumb
+        ? '<span class="img" style="background-image:url(\''+thumb+'\')"></span>'
         : '<span class="mono">'+esc(item[0].charAt(0))+'</span>';
       b.innerHTML=visual
         +'<span class="grad"></span>'
