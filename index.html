@@ -958,7 +958,8 @@
     "Single-leg RDL": "videos/single-leg-rdl.jpg",
     "Incline dumbbell press": "videos/incline-dumbbell-press.jpg",
     "Half-kneeling landmine press": "videos/half-kneeling-landmine-press.jpg",
-    "Deficit push-ups": "videos/deficit-push-ups.jpg"
+    "Deficit push-ups": "videos/deficit-push-ups.jpg",
+    "Neutral grip lat pulldown": "videos/neutral-grip-lat-pulldown.jpg"
   };
   function thumbOf(name){
     return VIDEOS[name] ? VIDEOS[name]+'.jpg' : THUMBS[name];
@@ -996,6 +997,20 @@
   }catch(e){}
   delete state.cardio; delete state.sessions;   /* pre-calendar format, not date-keyed */
   if(!state.days) state.days = {};
+  /* migrate one-lift-per-day records to per-workout records */
+  Object.keys(state.days).forEach(function(k){
+    var rec=state.days[k];
+    if(rec.lift!==undefined){
+      rec.lifts=rec.lifts||{};
+      rec.lifts[rec.lift]={dur:rec.dur, rounds:rec.rounds};
+      delete rec.lift; delete rec.dur; delete rec.rounds;
+    }
+    if(rec.phasesFor!==undefined){
+      rec.phases=rec.phases||{};
+      rec.phases[rec.phasesFor]=rec.phasesDone||[];
+      delete rec.phasesFor; delete rec.phasesDone;
+    }
+  });
   function saveState(){
     try{ localStorage.setItem('mam_state_v1', JSON.stringify(state)); }catch(e){}
   }
@@ -1079,7 +1094,7 @@
     var lifts=0, cardioN=0, checks=0, rows='';
     wd.forEach(function(k){
       var rec=state.days[k]||{};
-      if(rec.lift!==undefined) lifts++;
+      if(rec.lifts) lifts+=Object.keys(rec.lifts).length;
       if(rec.cardio){
         cardioN+=rec.cardio.length;
         rec.cardio.forEach(function(e,i){
@@ -1128,9 +1143,10 @@
     for(var d=1;d<=dim;d++){
       var key=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
       var rec=state.days[key]||{};
-      var hasLift=rec.lift!==undefined, hasCardio=!!(rec.cardio&&rec.cardio.length), hasCheck=!!state.checkins[key];
+      var liftN=rec.lifts?Object.keys(rec.lifts).length:0;
+      var hasLift=liftN>0, hasCardio=!!(rec.cardio&&rec.cardio.length), hasCheck=!!state.checkins[key];
       if(hasLift||hasCardio||hasCheck) active++;
-      if(hasLift) mLifts++;
+      mLifts+=liftN;
       if(hasCardio) mCardio+=rec.cardio.length;
       var dots='';
       if(hasLift) dots+='<i style="background:var(--accent)"></i>';
@@ -1162,7 +1178,7 @@
     var arc=document.getElementById('homearc');
     arc.innerHTML="";
     var rec=state.days[todayKey()]||{};
-    var doneList=(rec.phasesFor===day && rec.phasesDone) ? rec.phasesDone : [];
+    var doneList=(rec.phases && rec.phases[day]) ? rec.phases[day] : [];
     w.phases.forEach(function(p,i){
       var d=document.createElement('div');
       d.className='ph'+(doneList.indexOf(i)>=0?' done':'');
@@ -1417,8 +1433,9 @@
     });
     /* restore phases already completed today for this workout */
     var rec=state.days[todayKey()]||{};
-    if(rec.phasesFor===day && rec.phasesDone && rec.phasesDone.length){
-      rec.phasesDone.forEach(function(pi){
+    var doneToday=(rec.phases && rec.phases[day]) ? rec.phases[day] : [];
+    if(doneToday.length){
+      doneToday.forEach(function(pi){
         var ph=list.children[pi];
         if(!ph) return;
         ph.classList.add('done');
@@ -1428,7 +1445,7 @@
         st.textContent='Done'; st.classList.add('done');
       });
       for(var i=0;i<list.children.length;i++){
-        if(rec.phasesDone.indexOf(i)<0){
+        if(doneToday.indexOf(i)<0){
           Array.prototype.forEach.call(list.children,function(c){c.classList.remove('open');});
           list.children[i].classList.add('open');
           break;
@@ -1475,11 +1492,12 @@
 
   function markPhaseDone(i, on){
     var rec=dayRec(todayKey());
-    if(rec.phasesFor!==day){ rec.phasesFor=day; rec.phasesDone=[]; }
-    rec.phasesDone=rec.phasesDone||[];
-    var ix=rec.phasesDone.indexOf(i);
-    if(on && ix<0) rec.phasesDone.push(i);
-    if(!on && ix>=0) rec.phasesDone.splice(ix,1);
+    rec.phases=rec.phases||{};
+    rec.phases[day]=rec.phases[day]||[];
+    var list=rec.phases[day];
+    var ix=list.indexOf(i);
+    if(on && ix<0) list.push(i);
+    if(!on && ix>=0) list.splice(ix,1);
     saveState();
     renderToday();
   }
@@ -1509,11 +1527,10 @@
     clearInterval(elapsedTimer); elapsedTimer=null;
     var roundsDone=document.querySelectorAll('#phaselist .setdot.on').length;
     var rec=dayRec(todayKey());
-    rec.lift=day;
-    rec.dur=elapsedSec;
-    rec.rounds=roundsDone;
-    rec.phasesFor=day;
-    rec.phasesDone=WORKOUTS[day].phases.map(function(_,i){return i;});
+    rec.lifts=rec.lifts||{};
+    rec.lifts[day]={dur:elapsedSec, rounds:roundsDone};
+    rec.phases=rec.phases||{};
+    rec.phases[day]=WORKOUTS[day].phases.map(function(_,i){return i;});
     saveState(); renderWeek();
     document.getElementById('sum-sub').textContent=WORKOUTS[day].name;
     var sm=Math.floor(elapsedSec/60), ss=elapsedSec%60;
